@@ -1,0 +1,12 @@
+{
+  "name": "sdks.near",
+  "version": "1.0.0",
+  "repository": "https://github.com/NEARBuilders/sdks.near",
+  "scripts": {
+    "dev": "bos-workspace dev",
+    "build": "bos-workspace build"
+  },
+  "devDependencies": {
+    "bos-workspace": "^0.0.1-alpha.4"
+  }
+}
