@@ -1,4 +1,0 @@
-{
-  "description": "This library allows anyone to sign and verify messages from Ethereum and any Ethereum L2.\n\nMethods:\n- sign: Requests the user to sign a message (user must have connected his Ethereum Wallet before calling this method)\n- verify: Verifies if a given message meets the expected signer address. For this, it is needed to pass the original message, the signature of the signer, and the expected signer address.\n- getSignerAddress: Gets the signer address of a given message by passing the original message and the signature.",
-  "name": "EthereumSigner"
-}
