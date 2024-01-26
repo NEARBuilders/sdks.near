@@ -1,4 +1,5 @@
-const DaoSDK = VM.require("sdks.near/widget/SDKs.Sputnik.DaoSDK");
+const $ = VM.require("sdks.near/widget/Loader");
+const { DaoSDK } = $("@sdks/sputnik");
 DaoSDK || (DaoSDK = () => {});
 
 const [daoId, setDaoId] = useState(null);

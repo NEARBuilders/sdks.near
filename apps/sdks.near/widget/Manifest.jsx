@@ -12,7 +12,7 @@ return {
       requests: resolve("SDKs.Lens.Requests"),
       utils: resolve("SDKs.Lens.Helpers"),
       queries: resolve("SDKs.Lens.Queries"),
-      types: resolve("SDKs.Lens.Types"),
+      types: resolve("SDKs.Lens.Types")
     },
     "lens-sdk": "SDKs.Lens.LensSDK",
     "light-client": "SDKs.LightClient",
@@ -25,11 +25,12 @@ return {
     utils: ["Abstracts.ExternalDependency", ...resolve("Utils.")],
     abstracts: resolve("Abstracts."),
     blockies: ["Abstracts.ExternalDependency", "Utils.Blockies"],
-    "routes-manager": "Utils.RoutesManager"
+    "routes-manager": "Utils.RoutesManager",
+    sputnik: ["SDKs.Sputnik.DaoSDK"]
   },
   links: {
     telegram: "@OxMattB",
     twitter: "@0xMattB",
-    near: "@mattb.near",
-  },
+    near: "@mattb.near"
+  }
 };
