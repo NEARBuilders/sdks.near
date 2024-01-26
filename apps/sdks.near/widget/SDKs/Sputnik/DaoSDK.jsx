@@ -159,7 +159,7 @@ return (daoId, proposalId, factoryId) => {
       ChangePolicy: "policy",
       AddMemberToRole: "add_member_to_role",
       RemoveMemberFromRole: "remove_member_from_role",
-      FunctionCall: isCongressDaoID ? "FunctionCall" : "call",
+      FunctionCall: "call",
       UpgradeSelf: "upgrade_self",
       UpgradeRemote: "upgrade_remote",
       Transfer: "transfer",
@@ -172,10 +172,7 @@ return (daoId, proposalId, factoryId) => {
       ChangePolicyRemoveRole: "policy_remove_role",
       ChangePolicyUpdateDefaultVotePolicy: "policy_update_default_vote_policy",
       ChangePolicyUpdateParameters: "policy_update_parameters",
-      Text: "Text",
-      FundingRequest: "FundingRequest",
-      RecurrentFundingRequest: "RecurrentFundingRequest",
-      DismissAndBan: "DismissAndBan"
+      Text: "Text"
     },
     decodeArgs: ({ args }) => {
       try {
