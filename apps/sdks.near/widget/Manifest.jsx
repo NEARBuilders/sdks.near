@@ -26,7 +26,8 @@ return {
     abstracts: resolve("Abstracts."),
     blockies: ["Abstracts.ExternalDependency", "Utils.Blockies"],
     "routes-manager": "Utils.RoutesManager",
-    multisig: "SDKs.MultiSig"
+    multisig: "SDKs.MultiSig",
+    sputnik: ["SDKs.Sputnik.DaoSDK"]
   },
   links: {
     telegram: "@OxMattB",
