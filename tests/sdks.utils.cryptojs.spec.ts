@@ -1,7 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
 import 'dotenv/config';
 
-const WIDGET_URL = `${process.env.GATEWAY_URL}/${process.env.ACCOUNT_ID}/widget/Examples.CryptoJS`;
+const GATEWAY_URL = process.env.GITHUB_ACTIONS ? "http://127.0.0.1:4040" : process.env.GATEWAY_URL;
+const ACCOUNT_ID = process.env.ACCOUNT_ID || "sdks.near";
+
+const WIDGET_URL = `${GATEWAY_URL}/${ACCOUNT_ID}/widget/Examples.CryptoJS`;
 
 test('it hashes text', async ({ page }: { page: Page }) => {
   await page.goto(WIDGET_URL);
