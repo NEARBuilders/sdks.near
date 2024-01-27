@@ -80,7 +80,7 @@ return (
         <Input
           type="text"
           placeholder="Enter here the text to hash"
-          onKeyUp={(e) => {
+          onChange={(e) => {
             setText(e.target.value);
           }}
         />

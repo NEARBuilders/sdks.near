@@ -1,3 +1,8 @@
 *.metadata.json
 node_modules
 build
+.env
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
