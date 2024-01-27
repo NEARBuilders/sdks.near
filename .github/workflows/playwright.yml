@@ -8,6 +8,8 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      GATEWAY_URL: ${{ vars.GATEWAY_URL }}
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
