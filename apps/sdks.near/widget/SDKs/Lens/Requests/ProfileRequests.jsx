@@ -1,5 +1,5 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Constants } = $("@sdks/lens/definitions");
+const { Constants } = $("@sdks/lens/definitions#alpha");
 
 const CREATE_PROFILE_REQUEST = {
   handle: "",

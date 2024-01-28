@@ -1,10 +1,11 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Profile } = $("@sdks/lens/queries");
-const { ApiHelper } = $("@sdks/lens/helpers");
+const { Profile } = $("@sdks/lens/queries#alpha");
+const { ProfileMutations } = $("@sdks/lens/mutations#alpha");
+const { ApiHelper } = $("@sdks/lens/helpers#alpha");
 
 return {
   create: (Client, createProfileRequest) => {
-    return Client.graphql(Profile.CREATE_PROFILE_QUERY, {
+    return Client.graphql(ProfileMutations.CREATE_PROFILE_MUTATION, {
       createProfileRequest,
     }).then((payload) => payload.body || {});
   },
@@ -45,11 +46,11 @@ return {
       profileInterestsRequest,
     }).then((payload) => payload.body.data.profileInterests || []),
   report: (Client, reportProfileRequest) =>
-    Client.graphql(Profile.PROFILE_REPORT_QUERY, {
+    Client.graphql(ProfileMutations.PROFILE_REPORT_MUTATION, {
       reportProfileRequest,
     }).then((payload) => ""),
   block: (Client, blockProfileRequest) =>
-    Client.graphql(Profile.PROFILE_BLOCK_QUERY, {
+    Client.graphql(ProfileMutations.PROFILE_BLOCK_MUTATION, {
       blockProfileRequest,
     }).then((payload) => payload.body || {}),
   history: (Client, profileActionHistoryRequest) =>
@@ -61,40 +62,40 @@ return {
         pagination: payload.body.data.pageInfo || {},
       };
     }),
-  onChainIdentity: (profileOnChainIdentityRequest) =>
+  onChainIdentity: (Client, profileOnChainIdentityRequest) =>
     Client.graphql(
       Profile.PROFILE_ONCHAIN_IDENTITY_QUERY,
       profileOnChainIdentityRequest
     ).then((payload) => payload.body.data.profile.onChainIdentity || {}),
-  isFollowedByMe: (profileRequest) =>
+  isFollowedByMe: (Client, profileRequest) =>
     Client.graphql(Profile.PROFILE_IS_FOLLOWED_BY_ME_QUERY, {
       profileRequest,
     }).then((payload) => payload.body.data.profile.isFollowedByMe || false),
-  isFollowingMe: (profileRequest) =>
+  isFollowingMe: (Client, profileRequest) =>
     Client.graphql(Profile.PROFILE_IS_FOLLOWING_ME_QUERY, {
       profileRequest,
     }).then((payload) => payload.body.data.profile.isFollowingMe || false),
-  canFollow: (profileRequest) =>
+  canFollow: (Client, profileRequest) =>
     Client.graphql(Profile.PROFILE_CAN_FOLLOW_QUERY, {
       profileRequest,
     }).then((payload) => payload.body.data.profile.canFollow || false),
-  canUnfollow: (profileRequest) =>
+  canUnfollow: (Client, profileRequest) =>
     Client.graphql(Profile.PROFILE_CAN_UNFOLLOW_QUERY, {
       profileRequest,
     }).then((payload) => payload.body.data.profile.canUnfollow || false),
-  isBlockedByMe: (profileRequest) =>
+  isBlockedByMe: (Client, profileRequest) =>
     Client.graphql(Profile.PROFILE_IS_BLOCKED_BY_ME_QUERY, {
       profileRequest,
     }).then((payload) => payload.body.data.profile.isBlockedByMe || false),
-  canBlock: (profileRequest) =>
+  canBlock: (Client, profileRequest) =>
     Client.graphql(Profile.PROFILE_CAN_BLOCK_QUERY, {
       profileRequest,
     }).then((payload) => payload.body.data.profile.canBlock || false),
-  hasBlockedMe: (profileRequest) =>
+  hasBlockedMe: (Client, profileRequest) =>
     Client.graphql(Profile.PROFILE_HAS_BLOCKED_ME_QUERY, {
       profileRequest,
     }).then((payload) => payload.body.data.profile.hasBlockedMe || false),
-  canUnblock: (profileRequest) =>
+  canUnblock: (Client, profileRequest) =>
     Client.graphql(Profile.PROFILE_CAN_UNBLOCK_QUERY, {
       profileRequest,
     }).then((payload) => payload.body.data.profile.canUnblock || false),

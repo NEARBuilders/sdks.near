@@ -25,31 +25,7 @@ const CHALLENGE_QUERY = `
     }
 `;
 
-const SIGNED_AUTH_CHALLENGE_QUERY = `
-    mutation Authenticate($signedAuthChallengeRequest: SignedAuthChallenge!) {
-      authenticate(request: $signedAuthChallengeRequest) {
-        accessToken
-        refreshToken
-      }
-    }
-`;
-
-const REFRESH_TOKEN_QUERY = `
-    mutation Refresh($refreshRequest: RefreshRequest!) {
-      refresh(request: $refreshRequest) {
-        accessToken
-        refreshToken
-      }
-    }
-`;
-
-const REVOKE_AUTHENTICATION_QUERY = `
-    mutation RevokeAuthentication($revokeAuthenticationRequest: RevokeAuthenticationRequest!) {
-      revokeAuthentication(request: $revokeAuthenticationRequest)
-    }
-`;
-
-const APPROVED_AUTHENTICATIONS_QUERY = `
+const APPROVED_AUTHENTICATION_QUERY = `
     query ApprovedAuthentication($approvedAuthenticationRequest: ApprovedAuthenticationRequest!) {
       approvedAuthentication(request: $approvedAuthenticationRequest) {
         pageInfo {
@@ -77,11 +53,8 @@ const VERIFY_TOKEN_QUERY = `
 `;
 
 return {
-  SIGNED_AUTH_CHALLENGE_QUERY,
-  CHALLENGE_QUERY,
   PROFILES_MANAGED_QUERY,
-  REFRESH_TOKEN_QUERY,
-  REVOKE_AUTHENTICATION_QUERY,
+  CHALLENGE_QUERY,
   APPROVED_AUTHENTICATION_QUERY,
-  VERIFY_QUERY,
+  VERIFY_TOKEN_QUERY,
 };

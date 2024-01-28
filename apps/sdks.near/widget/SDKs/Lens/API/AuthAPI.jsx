@@ -1,6 +1,7 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Auth } = $("@sdks/lens/queries");
-const { Interfaces } = $("@sdks/lens/definitions");
+const { Auth } = $("@sdks/lens/queries#alpha");
+const { AuthMutations } = $("@sdks/lens/mutations#alpha");
+const { Interfaces } = $("@sdks/lens/definitions#alpha");
 
 return {
   profiles: (Client, profilesManagedRequest) => {
@@ -16,19 +17,19 @@ return {
     );
   },
   authenticate: (Client, signedAuthChallengeRequest) => {
-    return Client.graphql(Auth.SIGNED_AUTH_CHALLENGE_QUERY, {
+    return Client.graphql(AuthMutations.SIGNED_AUTH_CHALLENGE_MUTATION, {
       signedAuthChallengeRequest,
     }).then((payload) => {
       return payload.body.data.authenticate || Interfaces.AUTH_INTERFACE;
     });
   },
   refresh: (Client, refreshRequest) => {
-    return Client.graphql(Auth.PROFILES_MANAGED_QUERY, { refreshRequest }).then(
+    return Client.graphql(AuthMutations.REFRESH_TOKEN_MUTATION, { refreshRequest }).then(
       (payload) => payload.body.data.refresh || Interfaces.AUTH_INTERFACE
     );
   },
   revoke: (Client, revokeAuthenticationRequest) => {
-    return Client.graphql(Auth.REVOKE_AUTHENTICATION_QUERY, {
+    return Client.graphql(AuthMutations.REVOKE_AUTHENTICATION_MUTATION, {
       revokeAuthenticationRequest,
     }).then((payload) => true);
   },

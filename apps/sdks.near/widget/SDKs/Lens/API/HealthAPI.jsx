@@ -1,6 +1,6 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Health } = $("@sdks/lens/queries");
-const { Constants } = $("@sdks/lens/definitions");
+const { Health } = $("@sdks/lens/queries#alpha");
+const { Constants } = $("@sdks/lens/definitions#alpha");
 
 return {
   ping: (Client) =>

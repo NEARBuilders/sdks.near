@@ -12,7 +12,9 @@ return {
       requests: resolve("SDKs.Lens.Requests"),
       utils: resolve("SDKs.Lens.Helpers"),
       queries: resolve("SDKs.Lens.Queries"),
-      types: resolve("SDKs.Lens.Types")
+      mutations: resolve("SDKs.Lens.Mutations"),
+      types: resolve("SDKs.Lens.Types"),
+      filters: resolve("SDKs.Lens.Filters")
     },
     "lens-sdk": "SDKs.Lens.LensSDK",
     "light-client": "SDKs.LightClient",
