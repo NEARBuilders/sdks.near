@@ -214,6 +214,7 @@ const LensSDK = {
       ),
     fetchPublications: (profileId) => LensSDK.publications.fetchAll(profileId),
     isHandleAvailable: (handle) => LensSDK.profile.fetch({ forHandle: handle }),
+    whoActedOnPublication: (whoActedOnPublicationRequest) => LensSDK.publication.whoActed(whoActedOnPublicationRequest)
   },
   publication: {
     fetch: (publicationRequest) =>
@@ -228,13 +229,61 @@ const LensSDK = {
         PublicationRequests.PUBLICATIONS_REQUEST,
         publicationsRequest
       ),
-    stats: (publicationId) => {},
-    whoActed: (publicationId) => {},
-    comments: (publicationId) => {},
-    upvote: (publicationId) => {},
-    downvote: (publicationId) => {},
-    hide: (publicationId) => {},
-    report: (publicationId) => {},
+    stats: (publicationStatsRequest) => 
+      LensSDK._call(
+        PublicationAPI.stats,
+        PublicationRequests.PUBLICATION_STATS_REQUEST,
+        publicationStatsRequest
+      ),
+    whoActed: (whoActedOnPublicationRequest) =>
+     LensSDK._call(
+        PublicationAPI.whoActed,
+        PublicationRequests.WHO_ACTED_ON_PUBLICATION_REQUEST,
+        whoActedOnPublicationRequest
+      ),
+    comments: (publicationRequest) => 
+      LensSDK._call(
+        PublicationAPI.comments,
+        PublicationRequests.PUBLICATION_REQUEST,
+        publicationRequest
+      ),
+    mirrors: (publicationRequest) => 
+      LensSDK._call(
+        PublicationAPI.mirrors,
+        PublicationRequests.PUBLICATION_REQUEST,
+        publicationRequest
+      ),
+    quotes: (publicationRequest) => 
+      LensSDK._call(
+        PublicationAPI.quotes,
+        PublicationRequests.PUBLICATION_REQUEST,
+        publicationRequest
+      ),
+    reactions: {
+      fetch: () => {},
+      add: (publicationReactionRequest) => 
+        LensSDK.publication._react(PublicationAPI.addReaction, publicationReactionRequest),
+      remove: (publicationReactionRequest) => 
+        LensSDK.publication._react(PublicationAPI.removeReaction, publicationReactionRequest),
+      _react: (reactionEndpoint, publicationReactionRequest) =>
+        LensSDK._call(
+          reactionEndpoint,
+          PublicationRequests.PUBLICATION_REACTION_REQUEST,
+          publicationReactionRequest
+        )
+    },
+    hide: (hidePublicationRequest) => 
+      LensSDK._call(
+        PublicationAPI.hide,
+        PublicationRequests.HIDE_PUBLICATION_REQUEST,
+        hidePublicationRequest
+      ),
+    report: (reportPublicationRequest) => 
+      LensSDK._call(
+        PublicationAPI.report,
+        PublicationRequests.REPORT_PUBLICATION_REQUEST,
+        reportPublicationRequest
+      ),
   },
   search: {
     profiles: () => (profileSearchRequest) => 
