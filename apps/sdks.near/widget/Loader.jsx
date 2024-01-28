@@ -8,23 +8,25 @@ TYPES[TYPE_IMAGE] = "images";
 TYPES[TYPE_JSON] = "data";
 TYPES[TYPE_URL] = "links";
 
+const getWidgetPath = (account, dependency, version) => `${account}/widget/${dependency}${version ? `@${version}` : ""}`;
+
 let loaders = {};
 loaders[TYPES[TYPE_LIBRARY]] = {
-  string: (account, dependency) => {
+  string: (account, dependency, version) => {
     let result = {};
     result[dependency.split(".").pop()] = VM.require(
-      `${account}/widget/${dependency}`
+      getWidgetPath(account, dependency, version)
     );
     return result;
   },
-  object: (account, dependencies) => {
+  object: (account, dependencies, version) => {
     let result = {};
 
     if (Array.isArray(dependencies)) {
       dependencies.map(
         (dependency) =>
           (result[dependency.split(".").pop()] = VM.require(
-            `${account}/widget/${dependency}`
+            getWidgetPath(account, dependency, version)
           ))
       );
     } else {
@@ -32,7 +34,7 @@ loaders[TYPES[TYPE_LIBRARY]] = {
         dependencies[containerName].map(
           (dependency) =>
             (result[dependency.split(".").pop()] = VM.require(
-              `${account}/widget/${dependency}`
+              getWidgetPath(account, dependency, version)
             ))
         )
       );
@@ -65,11 +67,16 @@ const getScope = (namespace) =>
 const getAccount = (scope, namespace) =>
   `${namespace.substring(scope.length, namespace.indexOf("/"))}.near`;
 const getPath = (namespace) =>
-  namespace.substring(namespace.indexOf("/") + 1, namespace.length);
+  namespace.substring(namespace.indexOf("/") + 1, namespace.indexOf("#") != -1 ? namespace.indexOf("#") : namespace.length);
+const getVersion = (namespace) => {
+  return namespace.indexOf("#") != -1 ? namespace.substring(namespace.indexOf("#") + 1, namespace.length) : "latest";
+}
+
 const parseRequest = (namespace) => [
   getAccount(getScope(namespace), namespace),
   getType(getScope(namespace)),
   getPath(namespace),
+  getVersion(namespace)
 ];
 const getManifest = (account) => VM.require(`${account}/widget/Manifest`);
 const getResource = (manifest, resourceType) =>
@@ -80,11 +87,23 @@ const loadDependencies = (account, loaderName, dependencies) =>
   loaders[loaderName || TYPES[TYPE_LIBRARY]][
     typeof dependencies !== "undefined" ? typeof dependencies : "void"
   ](account, dependencies);
-const load = (account, resourceType, path) =>
-  loadDependencies(
+
+const mapVersion = (version, path, manifest) => {
+  let dependency = path.split("/").shift();
+  let releases = manifest["releases"] || {};
+
+  return version && dependency in releases && version in releases[dependency] ? releases[dependency][version] : null;
+}
+
+const load = (account, resourceType, path, version) => {
+  const manifest = getManifest(account) || {};
+
+  return loadDependencies(
     account,
     resourceType,
-    getDependencies(getResource(getManifest(account) || {}, resourceType), path)
+    getDependencies(getResource(manifest, resourceType), path),
+    mapVersion(version, path, manifest)
   );
+}
 
 return (namespace) => load(...parseRequest(namespace));
