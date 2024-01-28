@@ -4,7 +4,7 @@ const { PublicationMutations } = $("@sdks/lens/mutations#alpha");
 const { Constants } = $("@sdks/lens/definitions#alpha");
 const { ApiHelper } = $("@sdks/lens/utils#alpha");
 
-return {
+const PublicationAPI = {
   fetch: (Client, publicationRequest) => {
     return Client.graphql(Publication.PUBLICATION_QUERY, {
       publicationRequest: ApiHelper.clean(publicationRequest),
@@ -99,3 +99,5 @@ return {
     }).then((_) => true).catch((_) => false);
   },
 };
+
+return PublicationAPI;
