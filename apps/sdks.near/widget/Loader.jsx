@@ -106,6 +106,4 @@ const load = (account, resourceType, path, version) => {
   );
 }
 
-const $ = (namespace) => load(...parseRequest(namespace));
-
-console.log($("@sdks/lens"));
+return (namespace) => load(...parseRequest(namespace));
