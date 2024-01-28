@@ -11,7 +11,7 @@ return {
   },
   fetch: (Client, profileRequest) => {
     return Client.graphql(Profile.PROFILE_QUERY, {
-      profileRequest,
+      profileRequest: ApiHelper.clean(profileRequest),
     }).then((payload) => payload.body.data.profile || {});
   },
   fetchAll: (Client, profilesRequest) =>

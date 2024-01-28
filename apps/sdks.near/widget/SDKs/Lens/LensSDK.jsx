@@ -70,7 +70,9 @@ const LensSDK = {
               signedAuthChallengeRequest
             ).then((auth) => {
               LightClient.auth = auth;
-              LensSDK.profile = {}; // Fetch logged user profile once profile API gets implemented
+              LensSDK.profile = LensSDK.profile.fetch({
+                forProfileId: challengeRequest.for
+              });
               return LensSDK.profile;
             });
           });
