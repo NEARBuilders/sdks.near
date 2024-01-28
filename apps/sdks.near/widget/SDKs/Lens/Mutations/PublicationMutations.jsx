@@ -4,7 +4,7 @@ const PUBLICATION_ADD_REACTION_MUTATION = `
   }
 `;
 
-const PUBLICATION_ADD_REACTION_MUTATION = `
+const PUBLICATION_REMOVE_REACTION_MUTATION = `
   mutation RemoveReaction($publicationReactionRequest: ReactionRequest!) {
     removeReaction(request: $publicationReactionRequest)
   }
