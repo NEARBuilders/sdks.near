@@ -321,11 +321,13 @@ const LensSDK = {
         txIdToTxHashRequest
       ),
   },
-  _call: (apiMethod, requestObject, dataObject) =>
-    apiMethod(
+  _call: (apiMethod, requestObject, dataObject) => {
+    console.log(dataObject);
+    return apiMethod(
       LightClient,
       dataObject ? ApiHelper.intersect(requestObject, dataObject) : null
-    ),
+    );
+  }
 };
 
 return LensSDK.init();

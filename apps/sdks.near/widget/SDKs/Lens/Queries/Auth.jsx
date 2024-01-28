@@ -25,7 +25,7 @@ const CHALLENGE_QUERY = `
     }
 `;
 
-const APPROVED_AUTHENTICATIONS_QUERY = `
+const APPROVED_AUTHENTICATION_QUERY = `
     query ApprovedAuthentication($approvedAuthenticationRequest: ApprovedAuthenticationRequest!) {
       approvedAuthentication(request: $approvedAuthenticationRequest) {
         pageInfo {
@@ -53,8 +53,8 @@ const VERIFY_TOKEN_QUERY = `
 `;
 
 return {
-  CHALLENGE_QUERY,
   PROFILES_MANAGED_QUERY,
+  CHALLENGE_QUERY,
   APPROVED_AUTHENTICATION_QUERY,
-  VERIFY_QUERY,
+  VERIFY_TOKEN_QUERY,
 };
