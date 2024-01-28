@@ -1,5 +1,6 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
 const { Publication } = $("@sdks/lens/queries");
+const { PublicationMutations } = $("@sdks/lens/mutations");
 const { Constants } = $("@sdks/lens/definitions");
 const { ApiHelper } = $("@sdks/lens/utils");
 
@@ -68,11 +69,6 @@ return {
       };
     });
   },
-  _react: (Client, reactionMutation, publicationReactionRequest) => {
-      return Client.graphql(reactionMutation, {
-        publicationReactionRequest
-      }).then((_) => true).catch((_) => false);
-  },
   addReaction: (Client, publicationReactionRequest) => 
     PublicationAPI._react(Client, PublicationMutations.PUBLICATION_ADD_REACTION_MUTATION, publicationReactionRequest),
   removeReaction: (Client, publicationReactionRequest) => 
@@ -95,6 +91,11 @@ return {
   report: (Client, reportPublicationRequest) => {
     return Client.graphql(PublicationMutations.REPORT_PUBLICATION_MUTATION, {
       reportPublicationRequest
+    }).then((_) => true).catch((_) => false);
+  },
+  _react: (Client, reactionMutation, publicationReactionRequest) => {
+    return Client.graphql(reactionMutation, {
+      publicationReactionRequest
     }).then((_) => true).catch((_) => false);
   },
 };
