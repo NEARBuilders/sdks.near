@@ -1,6 +1,6 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Search } = $("@sdks/lens/queries");
-const { SearchRequests } = $("@sdks/lens/requests");
+const { Search } = $("@sdks/lens/queries#alpha");
+const { SearchRequests } = $("@sdks/lens/requests#alpha");
 
 return {
   profiles: (Client, profileSearchRequest) => {

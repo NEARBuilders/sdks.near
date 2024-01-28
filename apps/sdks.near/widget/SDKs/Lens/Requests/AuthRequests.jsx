@@ -1,5 +1,5 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Constants } = $("@sdks/lens/definitions");
+const { Constants } = $("@sdks/lens/definitions#alpha");
 
 const PROFILES_MANAGED_REQUEST = {
   limit: Constants.API_REQUEST_LIMITS.TEN,

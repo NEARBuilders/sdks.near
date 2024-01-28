@@ -16,7 +16,7 @@ const {
   NotificationRequests,
   SearchRequests,
   ApiHelper,
-} = $("@sdks/lens");
+} = $("@sdks/lens#alpha");
 const { LightClient } = $("@sdks/light-client");
 
 const LensSDK = {

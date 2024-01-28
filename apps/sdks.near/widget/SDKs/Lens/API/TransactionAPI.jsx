@@ -1,6 +1,6 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Transaction } = $("@sdks/lens/queries");
-const { TransactionRequests } = $("@sdks/lens/requests");
+const { Transaction } = $("@sdks/lens/queries#alpha");
+const { TransactionRequests } = $("@sdks/lens/requests#alpha");
 
 return {
   status: (Client, lensTransactionStatusRequest) => {

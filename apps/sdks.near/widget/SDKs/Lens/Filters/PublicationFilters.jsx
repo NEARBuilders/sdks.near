@@ -1,5 +1,5 @@
 const $ = VM.require("sdks.near/widget/Loader");
-const { PublicationTypes } = $("@sdks/lens/types");
+const { PublicationTypes } = $("@sdks/lens/types#alpha");
 
 const METADATA_CONTENT_WARNING_FILTERS = {
     oneOf: []

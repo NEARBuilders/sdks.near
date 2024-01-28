@@ -1,7 +1,7 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Auth } = $("@sdks/lens/queries");
-const { AuthMutations } = $("@sdks/lens/mutations");
-const { Interfaces } = $("@sdks/lens/definitions");
+const { Auth } = $("@sdks/lens/queries#alpha");
+const { AuthMutations } = $("@sdks/lens/mutations#alpha");
+const { Interfaces } = $("@sdks/lens/definitions#alpha");
 
 return {
   profiles: (Client, profilesManagedRequest) => {

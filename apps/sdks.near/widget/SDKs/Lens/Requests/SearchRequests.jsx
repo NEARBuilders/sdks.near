@@ -1,6 +1,6 @@
 const $ = VM.require("sdks.near/widget/Loader");
-const { Constants } = $("@sdks/lens/definitions");
-const { PublicationFilters } = $("@sdks/lens/filters");
+const { Constants } = $("@sdks/lens/definitions#alpha");
+const { PublicationFilters } = $("@sdks/lens/filters#alpha");
 
 const PROFILE_SEARCH_WHERE = {
   customFilters: ["GARDENERS"]

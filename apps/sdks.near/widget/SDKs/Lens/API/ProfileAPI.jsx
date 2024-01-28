@@ -1,7 +1,7 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Profile } = $("@sdks/lens/queries");
-const { ProfileMutations } = $("@sdks/lens/mutations");
-const { ApiHelper } = $("@sdks/lens/helpers");
+const { Profile } = $("@sdks/lens/queries#alpha");
+const { ProfileMutations } = $("@sdks/lens/mutations#alpha");
+const { ApiHelper } = $("@sdks/lens/helpers#alpha");
 
 return {
   create: (Client, createProfileRequest) => {

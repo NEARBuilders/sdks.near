@@ -1,8 +1,8 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Publication } = $("@sdks/lens/queries");
-const { PublicationMutations } = $("@sdks/lens/mutations");
-const { Constants } = $("@sdks/lens/definitions");
-const { ApiHelper } = $("@sdks/lens/utils");
+const { Publication } = $("@sdks/lens/queries#alpha");
+const { PublicationMutations } = $("@sdks/lens/mutations#alpha");
+const { Constants } = $("@sdks/lens/definitions#alpha");
+const { ApiHelper } = $("@sdks/lens/utils#alpha");
 
 return {
   fetch: (Client, publicationRequest) => {

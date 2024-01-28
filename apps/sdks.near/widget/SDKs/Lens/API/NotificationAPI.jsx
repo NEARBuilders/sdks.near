@@ -1,6 +1,6 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
-const { Notification } = $("@sdks/lens/queries");
-const { NotificationRequests } = $("@sdks/lens/requests");
+const { Notification } = $("@sdks/lens/queries#alpha");
+const { NotificationRequests } = $("@sdks/lens/requests#alpha");
 
 return {
   fetch: (Client, notificationRequest) => {
