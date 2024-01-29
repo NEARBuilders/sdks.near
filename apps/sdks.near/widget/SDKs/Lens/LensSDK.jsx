@@ -140,6 +140,12 @@ return (Store, status) => {
           ProfileRequests.PROFILES_REQUEST,
           profilesRequest
         ),
+      following: (followingRequest) =>
+        LensSDK._call(
+          ProfileAPI.following,
+          ProfileRequests.FOLLOWING_REQUEST,
+          followingRequest
+        ),
       followers: (followersRequest) =>
         LensSDK._call(
           ProfileAPI.followers,
