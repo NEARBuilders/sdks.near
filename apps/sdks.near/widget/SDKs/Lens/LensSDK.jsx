@@ -236,8 +236,8 @@ return (Store, status) => {
           ProfileRequests.PROFILE_REQUEST,
           profileRequest
         ),
-      fetchPublications: (profileId) => LensSDK.publications.fetchAll(profileId),
-      isHandleAvailable: (handle) => LensSDK.profile.fetch({ forHandle: handle }),
+      fetchPublications: (profileId) => LensSDK.publications.fetchAll({from: [profileId]}),
+      isHandleAvailable: (handle) => LensSDK.profile.fetch({ forHandle: handle }).then((profile) => !profile.id),
       whoActedOnPublication: (whoActedOnPublicationRequest) => LensSDK.publication.whoActed(whoActedOnPublicationRequest)
     },
     publication: {

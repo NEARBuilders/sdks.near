@@ -143,10 +143,22 @@ return (
           LensSDK.profile.fetch({
             forHandle: state.customProfileHandle
           }).then((profile) => {
+            LensSDK.profile.following({
+              for: profile.id
+            }).then((paginatedResult) => {
+              State.update({lastProfileResult: paginatedResult});
+            });
+          });
+        }}>Followers</button>
+
+        <button onClick={() => {
+          LensSDK.profile.fetch({
+            forHandle: state.customProfileHandle
+          }).then((profile) => {
             LensSDK.profile.followers({
               of: profile.id
-            }).then((isFollowedByMe) => {
-              State.update({lastProfileResult: isFollowedByMe});
+            }).then((paginatedResult) => {
+              State.update({lastProfileResult: paginatedResult});
             });
           });
         }}>Followers</button>
@@ -202,6 +214,12 @@ return (
             });
           });
         }}>On-Chain Identity</button>
+
+        <button onClick={() => {
+          LensSDK.profile.isHandleAvailable(state.customProfileHandle).then((status) => {
+            State.update({lastProfileResult: status.toString()});
+          })
+        }}>Is handle available</button>
 
         <button onClick={() => {
           LensSDK.profile.history({

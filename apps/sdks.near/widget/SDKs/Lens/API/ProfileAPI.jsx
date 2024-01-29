@@ -28,6 +28,15 @@ const ProfileAPI = {
         pagination: payload.body.data.profiles.pageInfo || {},
       };
     }),
+  following: (Client, followingRequest) =>
+    Client.graphql(Profile.FOLLOWING_QUERY, {
+      followingRequest,
+    }).then((payload) => {
+      return {
+        profiles: payload.body.data.following.items || [],
+        pagination: payload.body.data.following.pageInfo || {},
+      };
+    }),
   followers: (Client, followersRequest) =>
     Client.graphql(Profile.FOLLOWERS_QUERY, {
       followersRequest,
