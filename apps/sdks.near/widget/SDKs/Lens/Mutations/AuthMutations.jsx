@@ -8,8 +8,8 @@ const SIGNED_AUTH_CHALLENGE_MUTATION = `
 `;
 
 const REFRESH_TOKEN_MUTATION = `
-    mutation Refresh($refreshRequest: RefreshRequest!) {
-      refresh(request: $refreshRequest) {
+    mutation Refresh($refreshTokenRequest: RefreshRequest!) {
+      refresh(request: $refreshTokenRequest) {
         accessToken
         refreshToken
       }
