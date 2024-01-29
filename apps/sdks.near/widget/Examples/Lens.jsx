@@ -69,7 +69,7 @@ return (
       {state.alive && "Alive"}
       {false === state.alive && "Not alive"}
     </Panel>
-    <Panel>
+    <Panel id="authenticate">
       <p>Authentication</p>
       <Web3Connect />
       <button onClick={() => {
@@ -291,7 +291,8 @@ return (
       <br/><br/>
       <Panel>
         <p>Write</p>
-        <Web3Connect />
+        <p class="note">Warning: <a href="#authenticate">Authentication</a> required. They perform real actions</p>
+        <br/>
 
         <button onClick={() => {
           LensSDK.profile.block({
