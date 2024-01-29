@@ -26,7 +26,7 @@ return (daoId, proposalId, factoryId) => {
       });
     },
 
-    // ROLES + PERMISSIONS
+    // ROLES + PERMISSIONS + PROPOSALS
     // returns array of members for a particular groupId
     getMembersByGroupId: ({ groupId }) => {
       const policy = DaoSDK.getPolicy(daoId);
@@ -55,7 +55,7 @@ return (daoId, proposalId, factoryId) => {
       return data;
     },
     // returns a boolean indicating whether the user has the specified permission or not
-    hasPermission: ({ accountId, permissionKind, actionType }) => {
+    hasPermission: ({ accountId, kindName, actionType }) => {
       const isAllowed = false;
       const policy = DaoSDK.getPolicy(daoId);
       if (Array.isArray(policy.roles)) {
@@ -66,9 +66,11 @@ return (daoId, proposalId, factoryId) => {
           ) {
             return (
               role.permissions.includes(
-                `${permissionKind.toString()}:${actionType.toString()}`
+                `${DaoSDK.proposalKinds[kindName].toString()}:${actionType.toString()}`
               ) ||
-              role.permissions.includes(`${permissionKind.toString()}:*`) ||
+              role.permissions.includes(
+                `${DaoSDK.proposalKinds[kindName].toString()}:*`
+              ) ||
               role.permissions.includes(`*:${actionType.toString()}`) ||
               role.permissions.includes("*:*")
             );
@@ -78,7 +80,80 @@ return (daoId, proposalId, factoryId) => {
       }
       return isAllowed;
     },
-
+    getVotersAndThresholdForProposalKind: ({ kindName }) => {
+      const policy = DaoSDK.getPolicy(daoId);
+      let eligibleVotersArray = [];
+      let thresholdVoteCount = 0;
+      if (Array.isArray(policy.roles)) {
+        policy.roles.forEach((role) => {
+          const isRoleAllowedToVote =
+            role.permissions.includes(
+              `${DaoSDK.proposalKinds[kindName]}:VoteApprove`
+            ) ||
+            role.permissions.includes(
+              `${DaoSDK.proposalKinds[kindName]}:VoteReject`
+            ) ||
+            role.permissions.includes(`${DaoSDK.proposalKinds[kindName]}:*`) ||
+            role.permissions.includes(`*:VoteApprove`) ||
+            role.permissions.includes(`*:VoteReject`) ||
+            role.permissions.includes("*:*");
+          if (isRoleAllowedToVote) {
+            const threshold = (role.vote_policy &&
+              role.vote_policy[DaoSDK.proposalKinds[kindName]]?.threshold) ||
+              policy["default_vote_policy"]?.threshold || [0, 0];
+            for (const account of role.kind.Group) {
+              if (!eligibleVotersArray.includes(account)) {
+                eligibleVotersArray.push(account);
+              }
+            }
+            const eligibleVotersLength = role.kind.Group
+              ? role.kind.Group.length
+              : 0;
+            if (eligibleVoters === 0) {
+              return;
+            }
+            const votesNeeded =
+              Math.floor((threshold[0] / threshold[1]) * eligibleVotersLength) +
+              1;
+            thresholdVoteCount += votesNeeded;
+          }
+        });
+      }
+      return { eligibleVotersArray, thresholdVoteCount };
+    },
+    calculateVoteCountByType: ({ votes }) => {
+      let totalVotes = {
+        approve: 0,
+        reject: 0,
+        spam: 0,
+        total: 0
+      };
+      for (const vote of Object.values(votes)) {
+        if (vote === "Approve") {
+          totalVotes.approve++;
+        } else if (vote === "Reject") {
+          totalVotes.reject++;
+        } else if (vote === "Spam") {
+          totalVotes.spam++;
+        }
+      }
+      totalVotes.total =
+        totalVotes.approve + totalVotes.reject + totalVotes.spam;
+      return totalVotes;
+    },
+    getProposalExpirationTime: ({ submissionTime }) => {
+      const policy = DaoSDK.getPolicy();
+      const proposalPeriod = policy.proposal_period;
+      let expirationTime = Big(submissionTime).add(Big(proposalPeriod));
+      return expirationTime;
+    },
+    getCommentsByProposalId: ({ proposalId }) => {
+      return Social.index("comment", {
+        type: "dao_proposal_comment",
+        path: `${daoId}/proposal/main`,
+        proposal_id: proposalId + "-beta"
+      });
+    },
     // returns user/accountId status about membership of specified roles within a DAO or has an active proposal for membership within a defined search range
     checkIsMemberOrPending: ({ accountId, rolesToCheck, searchRange }) => {
       if (!accountId) {
@@ -138,12 +213,12 @@ return (daoId, proposalId, factoryId) => {
     },
 
     // UTILS
-    call: ({ methodName, args, deposit, gas }) => {
+    call: ({ methodName, args, deposit, gas, additionalCalls }) => {
       const policy = DaoSDK.getPolicy();
       const minDeposit = Big(policy?.proposal_bond);
       // make sure that the deposit is more/equal than bond amount
       const finalDeposit = Big(deposit).gt(minDeposit) ? deposit : minDeposit;
-      return Near.call([
+      const calls = [
         {
           contractName: daoId,
           methodName,
@@ -151,7 +226,11 @@ return (daoId, proposalId, factoryId) => {
           deposit: finalDeposit,
           gas: gas
         }
-      ]);
+      ];
+      if (Array.isArray(additionalCalls)) {
+        calls = calls.concat(additionalCalls);
+      }
+      return Near.call(calls);
     },
     voteActions: {
       VoteApprove: "VoteApprove",
@@ -191,21 +270,22 @@ return (daoId, proposalId, factoryId) => {
     },
 
     // PROPOSALS
-    addProposal: ({ proposal, deposit, gas }) => {
+    addProposal: ({ proposal, deposit, gas, additionalCalls }) => {
       return DaoSDK.call({
         methodName: "add_proposal",
         args: {
           proposal: proposal
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
-    createDao: ({ daoName, args, deposit, gas }) => {
+    createDao: ({ daoName, args, deposit, gas, additionalCalls }) => {
       const daoArgs = Buffer.from(JSON.stringify(args), "utf-8").toString(
         "base64"
       );
-      return Near.call([
+      const calls = [
         {
           contractName: "sputnik-dao.near",
           methodName: "create",
@@ -216,7 +296,11 @@ return (daoId, proposalId, factoryId) => {
           deposit,
           gas
         }
-      ]);
+      ];
+      if (Array.isArray(additionalCalls)) {
+        calls = calls.concat(additionalCalls);
+      }
+      return Near.call(calls);
     },
 
     // SPECIFIC PROPOSALS
@@ -225,7 +309,8 @@ return (daoId, proposalId, factoryId) => {
       memberId,
       roleId,
       gas,
-      deposit
+      deposit,
+      additionalCalls
     }) => {
       return DaoSDK.addProposal({
         proposal: {
@@ -238,7 +323,8 @@ return (daoId, proposalId, factoryId) => {
           }
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
     createRemoveMemberProposal: ({
@@ -246,7 +332,8 @@ return (daoId, proposalId, factoryId) => {
       memberId,
       roleId,
       gas,
-      deposit
+      deposit,
+      additionalCalls
     }) => {
       return DaoSDK.addProposal({
         proposal: {
@@ -259,17 +346,19 @@ return (daoId, proposalId, factoryId) => {
           }
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
-    createPollProposal: ({ description, gas, deposit }) => {
+    createPollProposal: ({ description, gas, deposit, additionalCalls }) => {
       return DaoSDK.addProposal({
         proposal: {
           description: description,
           kind: "Vote"
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
     createTransferProposal: ({
@@ -278,7 +367,8 @@ return (daoId, proposalId, factoryId) => {
       receiverId,
       amount,
       gas,
-      deposit
+      deposit,
+      additionalCalls
     }) => {
       return DaoSDK.addProposal({
         proposal: {
@@ -292,10 +382,17 @@ return (daoId, proposalId, factoryId) => {
           }
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
-    createBountyProposal: ({ description, bounty, gas, deposit }) => {
+    createBountyProposal: ({
+      description,
+      bounty,
+      gas,
+      deposit,
+      additionalCalls
+    }) => {
       return DaoSDK.addProposal({
         proposal: {
           description: description,
@@ -306,7 +403,8 @@ return (daoId, proposalId, factoryId) => {
           }
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
     createSubmitBountyProposal: ({
@@ -314,7 +412,8 @@ return (daoId, proposalId, factoryId) => {
       bounty,
       receiverId,
       gas,
-      deposit
+      deposit,
+      additionalCalls
     }) => {
       return DaoSDK.addProposal({
         proposal: {
@@ -327,7 +426,8 @@ return (daoId, proposalId, factoryId) => {
           }
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
     createFunctionCallProposal: ({
@@ -338,7 +438,8 @@ return (daoId, proposalId, factoryId) => {
       proposalGas,
       proposalDeposit,
       gas,
-      deposit
+      deposit,
+      additionalCalls
     }) => {
       const proposal_args = Buffer.from(JSON.stringify(args), "utf-8").toString(
         "base64"
@@ -361,12 +462,13 @@ return (daoId, proposalId, factoryId) => {
           }
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
 
     // VOTE
-    actProposal: ({ proposalId, action, deposit, gas }) => {
+    actProposal: ({ proposalId, action, deposit, gas, additionalCalls }) => {
       return DaoSDK.call({
         methodName: "act_proposal",
         args: {
@@ -374,38 +476,42 @@ return (daoId, proposalId, factoryId) => {
           action
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
 
     // SPECIFIC VOTE TXN
-    approveProposal: ({ proposalId, deposit, gas }) => {
+    approveProposal: ({ proposalId, deposit, gas, additionalCalls }) => {
       return DaoSDK.actProposal({
         proposalId,
         action: DaoSDK.voteActions.VoteApprove,
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
-    rejectProposal: ({ proposalId, deposit, gas }) => {
+    rejectProposal: ({ proposalId, deposit, gas, additionalCalls }) => {
       return DaoSDK.actProposal({
         proposalId,
         action: DaoSDK.voteActions.VoteReject,
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
-    removeProposal: ({ proposalId, deposit, gas }) => {
+    removeProposal: ({ proposalId, deposit, gas, additionalCalls }) => {
       return DaoSDK.actProposal({
         id: proposalId,
         action: DaoSDK.voteActions.VoteRemove,
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
 
     // BOUNTIES
-    claimBounty: ({ description, bounty, gas, deposit }) => {
+    claimBounty: ({ bounty, gas, deposit, additionalCalls }) => {
       return DaoSDK.call({
         methodName: "bounty_claim",
         args: {
@@ -413,17 +519,19 @@ return (daoId, proposalId, factoryId) => {
           deadline: bounty.max_deadline
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     },
-    unclaimBounty: ({ description, bounty, gas, deposit }) => {
+    unclaimBounty: ({ bounty, gas, deposit, additionalCalls }) => {
       return DaoSDK.call({
         methodName: "bounty_giveup",
         args: {
           id: JSON.parse(bounty.id)
         },
         deposit,
-        gas
+        gas,
+        additionalCalls
       });
     }
   };
