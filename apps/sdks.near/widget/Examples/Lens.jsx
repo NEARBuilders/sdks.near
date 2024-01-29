@@ -149,7 +149,7 @@ return (
               State.update({lastProfileResult: paginatedResult});
             });
           });
-        }}>Followers</button>
+        }}>Following</button>
 
         <button onClick={() => {
           LensSDK.profile.fetch({
