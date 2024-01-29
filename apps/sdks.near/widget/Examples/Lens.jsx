@@ -118,8 +118,8 @@ return (
       <p>Profile</p>
       <Panel>
         <p>Read</p>
-        <p class="note">Warning: Some endpoints require authentication to work (Action History)</p>
-        <input placeholder="Profile full handle" value={state.customProfileHandle} onChange={() => State.update({customProfileHandle: e.target.value})} />
+        <p class="note">Warning: Some endpoints require to be authenticated to work properly (Action History, isFollowedByMe...)</p>
+        <input placeholder="Profile full handle" value={state.customProfileHandle} onChange={(e) => State.update({customProfileHandle: e.target.value})} />
         <br/>
         <button onClick={() => {
           LensSDK.profile.fetch({
@@ -231,7 +231,7 @@ return (
 
         <button onClick={() => {
           LensSDK.profile.isFollowedByMe({
-            forProfileId: "0x01ccf2"
+            forHandle: state.customProfileHandle
           }).then((isFollowedByMe) => {
             State.update({lastProfileResult: isFollowedByMe.toString()});
           });
@@ -239,15 +239,15 @@ return (
 
         <button onClick={() => {
           LensSDK.profile.isFollowingMe({
-            forProfileId: "0x01ccf2"
+            forHandle: state.customProfileHandle
           }).then((isFollowingMe) => {
             State.update({lastProfileResult: isFollowingMe.toString()});
           });
-        }}>Profile is following by me</button>
+        }}>Profile is following me</button>
 
         <button onClick={() => {
           LensSDK.profile.isBlockedByMe({
-            forProfileId: "0x01ccf2"
+            forHandle: state.customProfileHandle
           }).then((isBlockedByMe) => {
             State.update({lastProfileResult: isBlockedByMe.toString()});
           });
@@ -255,7 +255,7 @@ return (
 
         <button onClick={() => {
           LensSDK.profile.canFollow({
-            forProfileId: "0x01ccf2"
+            forHandle: state.customProfileHandle
           }).then((canFollow) => {
             State.update({lastProfileResult: canFollow.toString()});
           });
@@ -263,7 +263,7 @@ return (
 
         <button onClick={() => {
           LensSDK.profile.canUnfollow({
-            forProfileId: "0x01ccf2"
+            forHandle: state.customProfileHandle
           }).then((canUnfollow) => {
             State.update({lastProfileResult: canUnfollow.toString()});
           });
@@ -271,7 +271,7 @@ return (
 
         <button onClick={() => {
           LensSDK.profile.canUnblock({
-            forProfileId: "0x01ccf2"
+            forHandle: state.customProfileHandle
           }).then((canUnblock) => {
             State.update({lastProfileResult: canUnblock.toString()});
           });
@@ -279,7 +279,7 @@ return (
 
         <button onClick={() => {
           LensSDK.profile.hasBlockedMe({
-            forProfileId: "0x01ccf2"
+            forHandle: state.customProfileHandle
           }).then((hasBlockedMe) => {
             State.update({lastProfileResult: hasBlockedMe.toString()});
           });

@@ -78,14 +78,14 @@ const ProfileAPI = {
       };
     }),
   onChainIdentity: (Client, profileOnChainIdentityRequest) => ProfileAPI.fetch(Client, profileOnChainIdentityRequest).then((profile) => profile.onchainIdentity || {}),
-  isFollowedByMe: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.isFollowedByMe.value || true),
-  isFollowingMe: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.isFollowingMe.value || true),
-  isBlockedByMe: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.isBlockedByMe.value || false),
+  isFollowedByMe: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.isFollowedByMe.value),
+  isFollowingMe: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.isFollowingMe.value),
+  isBlockedByMe: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.isBlockedByMe.value),
   canFollow: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.canFollow !== "NO"),
-  canUnfollow: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.canUnfollow || true),
-  canBlock: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.canBlock || true),
-  canUnblock: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.canUnblock || false),
-  hasBlockedMe: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.hasBlockedMe.value || false),
+  canUnfollow: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.canUnfollow),
+  canBlock: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.canBlock),
+  canUnblock: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.canUnblock),
+  hasBlockedMe: (Client, profileRequest) => ProfileAPI.fetch(Client, profileRequest).then((profile) => profile.operations.hasBlockedMe.value),
 };
 
 return ProfileAPI;
