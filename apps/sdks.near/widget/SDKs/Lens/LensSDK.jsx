@@ -40,6 +40,9 @@ return (Store, status) => {
   
       return LensSDK;
     },
+    isAuthenticated: () => !!LensSDK.get("profile").id,
+    getAccessToken: () => LensSDK.get("auth").accessToken || null,
+    getProfileId: () => LensSDK.get("profile").id || null,
     health: {
       ping: () =>
         LensSDK._call(HealthAPI.ping).then(
@@ -117,9 +120,6 @@ return (Store, status) => {
           AuthRequests.APPROVED_AUTHENTICATION_REQUEST,
           approvedAuthenticationRequest
         ),
-      isAuthenticated: () => LensSDK.profile.id != "",
-      getAccessToken: () => LightClient.auth.accessToken || null,
-      getProfileId: () => LensSDK.profile.id || null,
     },
     profile: {
       create: (createProfileRequest) =>
@@ -139,6 +139,12 @@ return (Store, status) => {
           ProfileAPI.fetchAll,
           ProfileRequests.PROFILES_REQUEST,
           profilesRequest
+        ),
+      followers: (followersRequest) =>
+        LensSDK._call(
+          ProfileAPI.followers,
+          ProfileRequests.FOLLOWERS_REQUEST,
+          followersRequest
         ),
       stats: (profileStatsRequest) =>
         LensSDK._call(
