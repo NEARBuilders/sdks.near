@@ -55,7 +55,7 @@ return (daoId, proposalId, factoryId) => {
       return data;
     },
     // returns a boolean indicating whether the user has the specified permission or not
-    hasPermission: ({ accountId, permissionType }) => {
+    hasPermission: ({ accountId, permissionKind, actionType }) => {
       const isAllowed = false;
       const policy = DaoSDK.getPolicy(daoId);
       if (Array.isArray(policy.roles)) {
@@ -65,7 +65,11 @@ return (daoId, proposalId, factoryId) => {
             role.kind.Group.includes(accountId)
           ) {
             return (
-              role.permissions.includes(`*:${permissionType}`) ||
+              role.permissions.includes(
+                `${permissionKind.toString()}:${actionType.toString()}`
+              ) ||
+              role.permissions.includes(`${permissionKind.toString()}:*`) ||
+              role.permissions.includes(`*:${actionType.toString()}`) ||
               role.permissions.includes("*:*")
             );
           }
