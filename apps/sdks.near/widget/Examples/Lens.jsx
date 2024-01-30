@@ -1,12 +1,16 @@
 const $ = VM.require("sdks.near/widget/Loader");
 const { LensSDK } = $("@sdks/lens-sdk");
-const { AuthRequests } = $("@sdks/lens/requests");
+const { Constants } = $("@sdks/lens/definitions");
 
 State.init({
   evmAddress: "",
   lastAuthenticationResult: "",
   lastProfileResult: "",
   lastProfileWriteResult: "",
+  lastPublicationReadResult: "",
+  lastPublicationWriteResult: "",
+  lastPublicationSearchResult: "",
+  lastProfileSearchResult: "",
   alive: null,
   profiles: [],
   login: null,
@@ -15,6 +19,8 @@ State.init({
   list: null,
   revoke: null,
   customProfileHandle: "lens/mattb",
+  searchProfileTerm: "stani",
+  searchPublicationTerm: "NEAR Protocol"
 })
 
 LensSDK = new LensSDK(State, state);
@@ -42,6 +48,7 @@ const Panel = styled.div`
     font-weight:bold;
     padding:0;
     margin:0;
+    margin-bottom:15px;
   }
 
   .note {
@@ -319,6 +326,70 @@ return (
 
         <br/><br/>
         {state.lastProfileWriteResult ? JSON.stringify(state.lastProfileWriteResult) : "Nothing to show yet"}
+      </Panel>
+    </Panel>
+    <Panel>
+      <p>Publication</p>
+      <Panel>
+        <p>Read</p>
+        <p className="note">Warning: Some endpoints require to be authenticated to work properly</p>
+        <br/><br/>
+        <button onClick={() => {
+          LensSDK.publication.fetch({
+            forId: '0x01-0x02c5'
+          }).then((publication) => {
+            State.update({lastPublicationReadResult: publication});
+          });
+        }}>Publication</button>
+        <button onClick={() => {
+          LensSDK.publication.fetchAll({
+            where: {
+              from: "0x01"
+            }
+          }).then((publication) => {
+            State.update({lastPublicationReadResult: publication});
+          });
+        }}>Publications</button>
+        <br/><br/>
+        {state.lastPublicationReadResult ? JSON.stringify(state.lastPublicationReadResult) : "Nothing to show yet"}
+      </Panel>
+    </Panel>
+
+    <Panel>
+      <p>Search</p>
+
+      <Panel>
+        <p>Search profiles</p>
+        <input type="text" value={state.searchProfileTerm} onChange={(e) => State.update({ searchProfileTerm: e.target.value })}/>
+        <button onClick={() => {
+          LensSDK.search.profiles({
+            query: state.searchProfileTerm
+          }).then((searchResult) => {
+            State.update({lastProfileSearchResult: searchResult});
+          });
+        }}>Search profiles</button>
+        <br/><br/>
+        {state.lastProfileSearchResult ? JSON.stringify(state.lastProfileSearchResult) : "Nothing to show yet"}
+      </Panel>
+
+      <Panel>
+        <p>Search publications</p>
+        <input type="text" value={state.searchPublicationTerm} onChange={(e) => State.update({ searchPublicationTerm: e.target.value })}/>
+        <button onClick={() => {
+          LensSDK.search.publications({
+            limit: Constants.API_REQUEST_LIMITS.TEN,
+            query: state.searchPublicationTerm,
+            where: {
+              metadata: {
+                locale: "en"
+              }
+            }
+          }).then((searchResult) => {
+            State.update({lastPublicationSearchResult: searchResult});
+          });
+        }}>Search publications</button>
+        <br/><br/>
+        {state.lastPublicationSearchResult ? JSON.stringify(state.lastPublicationSearchResult) : "Nothing to show yet"}
       </Panel>
     </Panel>
   </>

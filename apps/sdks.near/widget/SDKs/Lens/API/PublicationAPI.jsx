@@ -10,13 +10,13 @@ const PublicationAPI = {
       publicationRequest: ApiHelper.clean(publicationRequest),
     }).then((payload) => payload.body.data.publication || {});
   },
-  fetchAll: (publicationsRequest) => {
+  fetchAll: (Client, publicationsRequest) => {
     return Client.graphql(Publication.PUBLICATIONS_QUERY, {
       publicationsRequest: ApiHelper.clean(publicationsRequest),
     }).then((payload) => {
       return {
-        publications: payload.body.data.items || [],
-        pagination: payload.body.data.pageInfo || {},
+        publications: payload.body.data.publications.items || [],
+        pagination: payload.body.data.publications.pageInfo || {},
       };
     });
   },
@@ -26,7 +26,7 @@ const PublicationAPI = {
       publicationStatsInputRequest: ApiHelper.clean(publicationStatsRequest.stats),
       publicationStatsCountOpenActionArgsRequest: ApiHelper.clean(publicationStatsRequest.openAction)
     }).then((payload) => {
-      return payload.body.data.result || [];
+      return payload.body.data.result || [];
     });
   },
   whoActed: (Client, whoActedOnPublicationRequest) => {

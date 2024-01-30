@@ -316,7 +316,7 @@ return (Store, status) => {
         ),
     },
     search: {
-      profiles: () => (profileSearchRequest) => 
+      profiles: (profileSearchRequest) =>
         LensSDK._call(
           SearchAPI.profiles,
           SearchRequests.PROFILE_SEARCH_REQUEST,
