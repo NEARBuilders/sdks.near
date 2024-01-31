@@ -355,6 +355,17 @@ return (Store, status, enableTestnet) => {
           txIdToTxHashRequest
         ),
     },
+    customRequest: (graphql, request) => {
+      LensSDK.set("requestInProgress", true);
+
+      return LightClient.graphql(
+        graphql, 
+        request
+      ).then((data) => data.body)
+      .finally(() => {
+        LensSDK.set("requestInProgress", false);
+      });
+    },
     _call: (apiMethod, requestObject, dataObject) => {
       LensSDK.set("requestInProgress", true);
 

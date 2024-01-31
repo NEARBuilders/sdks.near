@@ -14,6 +14,7 @@ State.init({
   lastProfileSearchResult: "",
   lastNotificationResult: "",
   lastTransactionResult: "",
+  lastCustomRequestResult: "",
   handleCreated: null,
   alive: null,
   profiles: [],
@@ -28,7 +29,21 @@ State.init({
   transactionHash: "0xa46ff9fe2c68c0c5ff4347b449bf73373733d01a0377dc44bb1c684c2e702ca0",
   transactionId: "",
   testPublication: "0x01-0x02c5",
-  onlyOnce: true
+  onlyOnce: true,
+  customRequest: `query Profile($request: ProfileRequest!) {
+  profile(request: $request) {
+    operations {
+      isFollowedByMe {
+        value
+      }
+    }
+  }
+}`,
+  customRequestParameters: `{
+  "request": {
+    "forHandle": "lens/mattb"
+  }
+}`
 })
 
 LensSDK = new LensSDK(State, state);
@@ -81,6 +96,17 @@ const Panel = styled.div`
     border:0;
     border:2px solid rgba(0,0,0,.05);
     padding:10px 20px;
+  }
+
+  textarea {
+    display:block;
+    width:100%;
+    height:250px;
+    padding:0;
+    margin: 10px 0;
+    border:0;
+    border:2px solid rgba(0,0,0,.05);
+    padding:10px;
   }
 
   p {
@@ -693,6 +719,20 @@ return (
       <br/><br/>
       <Response>
         {state.lastTransactionResult ? JSON.stringify(state.lastTransactionResult) : "Nothing to show yet"}
+      </Response>
+    </Panel>
+    <Panel>
+      <p>Custom request</p>
+      <textarea placeholder="Graphql query/mutation" value={state.customRequest} onChange={(e) => State.update({customRequest: e.target.value})}></textarea>
+      <textarea placeholder="Request parameters" value={state.customRequestParameters} onChange={(e) => State.update({customRequestParameters: e.target.value})}></textarea>
+      <button onClick={() => {
+        LensSDK.customRequest(state.customRequest, JSON.parse(state.customRequestParameters)).then((result) => {
+          State.update({lastCustomRequestResult: result});
+        });
+      }}>Send request</button>
+      <br/><br/>
+      <Response>
+        {state.lastCustomRequestResult ? JSON.stringify(state.lastCustomRequestResult) : "Nothing to show yet"}
       </Response>
     </Panel>
   </>
