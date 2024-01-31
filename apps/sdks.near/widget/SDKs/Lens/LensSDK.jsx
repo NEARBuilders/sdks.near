@@ -23,6 +23,7 @@ const { LightClient } = $("@sdks/light-client");
 return (Store, status, enableTestnet) => {
   const LensSDK = {
     ...StatefulDependency(Store, status, "LensSDK"),
+    version: "alpha",
     enableTestnet: () => LensSDK.set("url", Constants.TESTNET_URL),
     enableMainnet: () => LensSDK.set("url", Constants.MAINNET_URL),
     isTestnet: () => LensSDK.get("url") == Constants.TESTNET_URL,
@@ -32,7 +33,8 @@ return (Store, status, enableTestnet) => {
         profile: null,
         auth: Interfaces.AUTH_INTERFACE,
         requestInProgress: false,
-        url: enableTestnet ? Constants.TESTNET_URL : Constants.MAINNET_URL
+        url: enableTestnet ? Constants.TESTNET_URL : Constants.MAINNET_URL,
+        tryGetAuth: true,
       });
 
       LightClient.url = LensSDK.get("url");
@@ -40,11 +42,14 @@ return (Store, status, enableTestnet) => {
       LightClient.tokenLifespan = Constants.JWT_TOKEN_LIFESPAN_SECONDS;
       LightClient.refreshTokenLifespan =
         Constants.JWT_REFRESH_TOKEN_LIFESPAN_SECONDS;
+
+      LensSDK.tryGetAuth();
   
       return LensSDK;
     },
     isAuthenticated: () => !!LensSDK.get("profile").id,
     getAccessToken: () => LensSDK.get("auth").accessToken || null,
+    getCurrentProfile: () => LensSDK.get("profile") || {},
     getProfileId: () => LensSDK.get("profile").id || null,
     isRequestInProgress: () => LensSDK.get("requestInProgress"),
     health: {
@@ -82,7 +87,7 @@ return (Store, status, enableTestnet) => {
                 AuthRequests.SIGNED_AUTH_CHALLENGE_REQUEST,
                 signedAuthChallengeRequest
               ).then((auth) => {
-                LensSDK.set("auth", auth);
+                LensSDK.updateAuth(auth);
   
                 return LensSDK.authentication.profiles({
                   for: challengeRequest.signedBy
@@ -93,6 +98,7 @@ return (Store, status, enableTestnet) => {
                     forHandle: profile.handle.fullHandle
                   }).then((profile) => {
                     LensSDK.set("profile", profile);
+                    LensSDK.persist("profileId", profile.id);
 
                     return profile;
                   });
@@ -100,13 +106,18 @@ return (Store, status, enableTestnet) => {
               });
             });
         }),
+      logout: () => {
+        LensSDK.clearAuth();
+        LensSDK.persist("profileId", "");
+        LensSDK.set("profile", null);
+      },
       refresh: () =>
         LensSDK._call(
           AuthAPI.refresh,
           AuthRequests.REFRESH_TOKEN_REQUEST,
           LensSDK.get("auth")
         ).then((auth) => {
-          LensSDK.set("auth", auth);
+          LensSDK.updateAuth(auth);
   
           return LensSDK.get("profile");
         }),
@@ -122,7 +133,7 @@ return (Store, status, enableTestnet) => {
         LensSDK._call(
           AuthAPI.list,
           AuthRequests.APPROVED_AUTHENTICATION_REQUEST,
-          approvedAuthenticationRequest
+          approvedAuthenticationRequest || {}
         ),
     },
     profile: {
@@ -375,7 +386,49 @@ return (Store, status, enableTestnet) => {
       ).finally(() => {
         LensSDK.set("requestInProgress", false);
       });
-    }
+    },
+    updateAuth: (auth) => {
+      LensSDK.set("auth", auth);
+      LensSDK.persist("auth", auth);
+    },
+    clearAuth: () => {
+      LensSDK.set("auth", Interfaces.AUTH_INTERFACE);
+      LensSDK.persist("auth", Interfaces.AUTH_INTERFACE);
+    },
+    tryGetAuth: () => {
+      if (LensSDK.get("tryGetAuth")) {
+        LensSDK.getPersisted("auth", Interfaces.AUTH_INTERFACE);
+        LensSDK.getPersisted("profileId", "");
+
+        setTimeout(() => {
+          LensSDK.set("auth", LensSDK.getPersisted("auth", Interfaces.AUTH_INTERFACE));
+          let profileId = LensSDK.getPersisted("profileId", "");
+
+          if (profileId) {
+            LensSDK.profile.fetch({
+              forProfileId: profileId
+            }).then((profile) => {
+              LensSDK.set("profile", profile);
+            });
+          }
+        }, 500);
+
+        LensSDK.set("tryGetAuth", false);
+      }
+    },
+    persist: (key, value) => {
+      Storage.privateSet(
+        LensSDK.getPersistKey(key),
+        JSON.stringify(value)
+      );
+    },
+    getPersisted: (key, defaultValue) => {
+      let persistedKey = LensSDK.getPersistKey(key);
+
+      return JSON.parse(Storage.privateGet(persistedKey)) || defaultValue;
+    },
+    getPersistKey: (key) => `LensSDK.${key}`,
+    getVersion: () => LensSDK.version
   };
 
   return LensSDK.init();

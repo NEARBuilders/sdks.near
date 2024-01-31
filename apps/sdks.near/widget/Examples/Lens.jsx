@@ -110,11 +110,29 @@ const Panel = styled.div`
   }
 
   p {
+    display:flex;
+    align-items:center;
     font-size:1.2rem;
     font-weight:bold;
     padding:0;
     margin:0;
     margin-bottom:15px;
+
+    .ball {
+      display:inline-block;
+      width:10px;
+      height:10px;
+      border-radius:100%;
+      margin-right:10px;
+
+      &.green {
+        background-color:lightgreen;
+      }
+
+      &.red {
+        background-color:red;
+      }
+    }
   }
 `;
 
@@ -188,7 +206,7 @@ return (
       <div className="spinner">
       </div>
     </Loading>
-    <h2 style={{margin: "20px 0", fontWeight: "bold"}}>Lens SDK API Dashboard <button style={{marginLeft: "10px"}} onClick={ () => LensSDK.isTestnet() ? LensSDK.enableMainnet() : LensSDK.enableTestnet() }>
+    <h2 style={{margin: "20px 0", fontWeight: "bold"}}>Lens SDK {LensSDK.getVersion()} API Dashboard <button style={{marginLeft: "10px"}} onClick={ () => LensSDK.isTestnet() ? LensSDK.enableMainnet() : LensSDK.enableTestnet() }>
       Switch to {LensSDK.isTestnet() ? "Mainnet" : "Testnet"}
     </button></h2>
     {LensSDK.isTestnet() && <Warning>Warning: Test environment requests might require different parameters.</Warning>}
@@ -229,7 +247,7 @@ return (
       </Response>
     </Panel>}
     <Panel id="authenticate">
-      <p>Authentication</p>
+      <p><span className={`ball ${ LensSDK.isAuthenticated() ? "green" : "red"}`}></span> Authentication</p>
       <Warning>Warning: Some endpoints require to be authenticated to work properly (Verify, refresh authentication...)</Warning>
       <Web3Connect />
       <button onClick={() => {
@@ -252,6 +270,12 @@ return (
         })
       }}>Authenticate on first profile</button>
       <button onClick={() => {
+        State.update({lastAuthenticationResult: LensSDK.getCurrentProfile()});
+      }}>Get current profile</button>
+      <button onClick={() => {
+        State.update({lastAuthenticationResult: LensSDK.getAccessToken()});
+      }}>Get authentication token</button>
+      <button onClick={() => {
         LensSDK.authentication.verify().then((result) => {
           State.update({lastAuthenticationResult: result, verify: result});
         })
@@ -262,7 +286,7 @@ return (
         })
       }}>Refresh authentication</button>
        <button onClick={() => {
-        LensSDK.authentication.list({}).then((result) => {
+        LensSDK.authentication.list().then((result) => {
           State.update({lastAuthenticationResult: result, list: result});
         })
       }}>List authentications</button>
@@ -274,6 +298,11 @@ return (
           State.update({lastAuthenticationResult: result, revoke: result});
         })
       }}>Revoke authentication</button>
+
+      <button onClick={() => {
+        LensSDK.authentication.logout();
+        State.update({lastAuthenticationResult: null});
+      }}>Disconnect authentication</button>
       
       <br/><br/>
       <Response>
