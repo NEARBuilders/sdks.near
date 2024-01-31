@@ -401,8 +401,20 @@ return (Store, status, enableTestnet) => {
         LensSDK.getPersisted("profileId", "");
 
         setTimeout(() => {
-          LensSDK.set("auth", LensSDK.getPersisted("auth", Interfaces.AUTH_INTERFACE));
+          let auth = LensSDK.getPersisted("auth", Interfaces.AUTH_INTERFACE);
           let profileId = LensSDK.getPersisted("profileId", "");
+
+          if (auth) {
+            LensSDK.set("auth", auth);
+          } else {
+            setTimeout(() => {
+              let auth = LensSDK.getPersisted("auth", Interfaces.AUTH_INTERFACE);
+              
+              if (auth) {
+                LensSDK.set("auth", auth);
+              }
+            }, 800);
+          }
 
           if (profileId) {
             LensSDK.profile.fetch({
@@ -410,8 +422,20 @@ return (Store, status, enableTestnet) => {
             }).then((profile) => {
               LensSDK.set("profile", profile);
             });
+          } else {
+            setTimeout(() => {
+              let profileId = LensSDK.getPersisted("profileId", "");
+
+              if (profileId) {
+                LensSDK.profile.fetch({
+                  forProfileId: profileId
+                }).then((profile) => {
+                  LensSDK.set("profile", profile);
+                });
+              }
+            }, 800);
           }
-        }, 500);
+        }, 800);
 
         LensSDK.set("tryGetAuth", false);
       }

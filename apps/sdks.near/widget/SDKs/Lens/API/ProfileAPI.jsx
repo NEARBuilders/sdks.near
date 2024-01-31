@@ -30,7 +30,7 @@ const ProfileAPI = {
     }),
   following: (Client, followingRequest) =>
     Client.graphql(Profile.FOLLOWING_QUERY, {
-      followingRequest,
+      followingRequest: ApiHelper.clean(followingRequest),
     }).then((payload) => {
       return {
         profiles: payload.body.data.following.items || [],
@@ -39,7 +39,7 @@ const ProfileAPI = {
     }),
   followers: (Client, followersRequest) =>
     Client.graphql(Profile.FOLLOWERS_QUERY, {
-      followersRequest,
+      followersRequest: ApiHelper.clean(followersRequest),
     }).then((payload) => {
       return {
         profiles: payload.body.data.followers.items || [],
