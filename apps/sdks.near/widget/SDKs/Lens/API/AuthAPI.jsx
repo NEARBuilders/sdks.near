@@ -2,6 +2,7 @@ const $ = VM.require(`sdks.near/widget/Loader`);
 const { Auth } = $("@sdks/lens/queries#alpha");
 const { AuthMutations } = $("@sdks/lens/mutations#alpha");
 const { Interfaces } = $("@sdks/lens/definitions#alpha");
+const { ApiHelper } = $("@sdks/lens/utils#alpha");
 
 return {
   profiles: (Client, profilesManagedRequest) => {
@@ -23,8 +24,8 @@ return {
       return payload.body.data.authenticate || Interfaces.AUTH_INTERFACE;
     });
   },
-  refresh: (Client, refreshRequest) => {
-    return Client.graphql(AuthMutations.REFRESH_TOKEN_MUTATION, { refreshRequest }).then(
+  refresh: (Client, refreshTokenRequest) => {
+    return Client.graphql(AuthMutations.REFRESH_TOKEN_MUTATION, { refreshTokenRequest }).then(
       (payload) => payload.body.data.refresh || Interfaces.AUTH_INTERFACE
     );
   },
@@ -35,12 +36,12 @@ return {
   },
   list: (Client, approvedAuthenticationRequest) => {
     return Client.graphql(Auth.APPROVED_AUTHENTICATION_QUERY, {
-      approvedAuthenticationRequest,
-    }).then((payload) => payload.body.data.approvedAuthentication.items || []);
+      approvedAuthenticationRequest: ApiHelper.clean(approvedAuthenticationRequest),
+    }).then((payload) => payload.body.data.approvedAuthentications.items || []);
   },
   verify: (Client, verifyRequest) => {
-    return Client.graphql(Auth.VERIFY_REQUEST, { verifyRequest }).then(
-      (payload) => (payload.body.data.verify || false) == true
+    return Client.graphql(Auth.VERIFY_TOKEN_QUERY, { verifyRequest }).then(
+      (payload) => payload.body.data.verify == true
     );
   },
 };

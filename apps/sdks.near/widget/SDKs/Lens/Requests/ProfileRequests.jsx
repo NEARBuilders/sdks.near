@@ -1,7 +1,7 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
 const { Constants } = $("@sdks/lens/definitions#alpha");
 
-const CREATE_PROFILE_REQUEST = {
+const CREATE_PROFILE_WITH_HANDLE_REQUEST = {
   handle: "",
   to: "",
 };
@@ -21,28 +21,34 @@ const PROFILES_WHERE_REQUEST = {
 };
 
 const PROFILES_REQUEST = {
-  limit: Constants.API_REQUEST_LIMITS.TEN,
+  limit: Constants.API_REQUEST_LIMITS.TWENTY_FIVE,
   cursor: "",
   where: PROFILES_WHERE_REQUEST,
 };
 
-const PROFILE_STATS_REQUEST = {
-  profileId: "",
-  forApps: [],
-  anyOf: [],
+const FOLLOWERS_REQUEST = {
+  limit: Constants.API_REQUEST_LIMITS.TWENTY_FIVE,
+  cursor: "",
+  of: "" // ProfileId
 };
+
+const FOLLOWING_REQUEST = {
+  limit: Constants.API_REQUEST_LIMITS.TWENTY_FIVE,
+  cursor: "",
+  for: "" // ProfileId
+};
+
+const PROFILE_STATS_REQUEST = PROFILE_REQUEST;
 
 const PROFILE_RECOMMENDATIONS_REQUEST = {
   for: "",
 };
 
-const PROFILE_INTERESTS_REQUEST = {
-  profileId: "",
-};
+const PROFILE_INTERESTS_REQUEST = PROFILE_REQUEST;
 
 const REPORT_PROFILE_REQUEST = {
   for: "",
-  reason: {},
+  reason: {}, // ProfileReportingReasonInput
   additionalComments: "",
 };
 
@@ -51,19 +57,18 @@ const BLOCK_PROFILE_REQUEST = {
 };
 
 const PROFILE_ACTION_HISTORY_REQUEST = {
-  limit: Constants.API_REQUEST_LIMITS.TEN,
-  cursor: "",
+  limit: Constants.API_REQUEST_LIMITS.TWENTY_FIVE,
 };
 
-const PROFILE_ONCHAIN_IDENTITY_REQUEST = {
-  profileId: "",
-};
+const PROFILE_ONCHAIN_IDENTITY_REQUEST = PROFILE_REQUEST;
 
 return {
-  CREATE_PROFILE_REQUEST,
+  CREATE_PROFILE_WITH_HANDLE_REQUEST,
   PROFILE_REQUEST,
   PROFILES_WHERE_REQUEST,
   PROFILES_REQUEST,
+  FOLLOWING_REQUEST,
+  FOLLOWERS_REQUEST,
   PROFILE_STATS_REQUEST,
   PROFILE_RECOMMENDATIONS_REQUEST,
   PROFILE_INTERESTS_REQUEST,

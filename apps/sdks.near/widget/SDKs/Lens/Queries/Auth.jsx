@@ -25,26 +25,7 @@ const CHALLENGE_QUERY = `
     }
 `;
 
-const APPROVED_AUTHENTICATION_QUERY = `
-    query ApprovedAuthentication($approvedAuthenticationRequest: ApprovedAuthenticationRequest!) {
-      approvedAuthentication(request: $approvedAuthenticationRequest) {
-        pageInfo {
-          prev
-          next
-        }
-        items {
-          authorizationId
-          browser
-          device
-          os
-          origin
-          expiresAt
-          createdAt
-          updatedAt
-        }
-      }
-    }
-`;
+const APPROVED_AUTHENTICATION_QUERY = `query ApprovedAuthentications($approvedAuthenticationRequest: ApprovedAuthenticationRequest!) {\n  approvedAuthentications(request: $approvedAuthenticationRequest) {\n    items {\n      authorizationId\n      browser\n      os\n      origin\n      expiresAt\n      createdAt\n      updatedAt\n      __typename\n    }\n    pageInfo {\n      next\n      __typename\n    }\n    __typename\n  }\n}`;
 
 const VERIFY_TOKEN_QUERY = `
     query Query($verifyRequest: VerifyRequest!) {

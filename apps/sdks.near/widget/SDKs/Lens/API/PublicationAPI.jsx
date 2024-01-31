@@ -10,62 +10,82 @@ const PublicationAPI = {
       publicationRequest: ApiHelper.clean(publicationRequest),
     }).then((payload) => payload.body.data.publication || {});
   },
-  fetchAll: (publicationsRequest) => {
+  fetchAll: (Client, publicationsRequest) => {
     return Client.graphql(Publication.PUBLICATIONS_QUERY, {
       publicationsRequest: ApiHelper.clean(publicationsRequest),
     }).then((payload) => {
       return {
-        publications: payload.body.data.items || [],
-        pagination: payload.body.data.pageInfo || {},
+        publications: payload.body.data.publications.items || [],
+        pagination: payload.body.data.publications.pageInfo || {},
       };
     });
   },
   stats: (Client, publicationStatsRequest) => {
-    return Client.graphql(Publication.PUBLICATION_STATS_QUERY, {
-      publicationRequest: ApiHelper.clean(publicationStatsRequest.publication),
-      publicationStatsInputRequest: ApiHelper.clean(publicationStatsRequest.stats),
-      publicationStatsCountOpenActionArgsRequest: ApiHelper.clean(publicationStatsRequest.openAction)
-    }).then((payload) => {
-      return payload.body.data.result || [];
+    return Client.graphql(Publication.PUBLICATION_STATS_QUERY, ApiHelper.clean({
+      publicationRequest: {
+        ...(ApiHelper.clean(publicationStatsRequest.publication || {}))
+      },
+      publicationStatsInputRequest: {
+        ...(ApiHelper.clean(publicationStatsRequest.stats || {}))
+      },
+      publicationStatsCountOpenActionArgsRequest: {
+        ...(ApiHelper.clean(publicationStatsRequest.openAction || {}))
+      }
+    })).then((payload) => {
+      return payload.body.data.result || [];
     });
   },
   whoActed: (Client, whoActedOnPublicationRequest) => {
     return Client.graphql(Publication.WHO_ACTED_ON_PUBLICATION_QUERY, {
-      whoActedOnPublicationRequest
+      whoActedOnPublicationRequest: ApiHelper.clean(whoActedOnPublicationRequest)
     }).then((payload) => {
       return {
-        publications: payload.body.data.items || [],
-        pagination: payload.body.data.pageInfo || {},
+        publications: payload.body.data.result.items || [],
+        pagination: payload.body.data.result.pageInfo || {},
       };
     });
   },
   comments: (Client, publicationRequest) => {
     return Client.graphql(Publication.PUBLICATION_COMMENTS_QUERY, {
-      publicationRequest: ApiHelper.clean(publicationRequest),
+      publicationsRequest: {
+        where: {
+          commentOn: {
+            id: publicationRequest.forId
+          }
+        }
+      },
     }).then((payload) => {
       return {
-        comments: payload.body.data.items || [],
-        pagination: payload.body.data.pageInfo || {},
+        comments: payload.body.data.publications.items || [],
+        pagination: payload.body.data.publications.pageInfo || {},
       };
     });
   },
   mirrors: (Client, publicationRequest) => {
     return Client.graphql(Publication.PUBLICATION_MIRRORS_QUERY, {
-      publicationRequest: ApiHelper.clean(publicationRequest),
+      publicationsRequest: {
+        where: {
+          mirrorOn: publicationRequest.forId
+        }
+      },
     }).then((payload) => {
       return {
-        mirrors: payload.body.data.items || [],
-        pagination: payload.body.data.pageInfo || {},
+        mirrors: payload.body.data.publications.items || [],
+        pagination: payload.body.data.publications.pageInfo || {},
       };
     });
   },
   quotes: (Client, publicationRequest) => {
     return Client.graphql(Publication.PUBLICATION_QUOTES_QUERY, {
-      publicationRequest: ApiHelper.clean(publicationRequest),
+      publicationsRequest: {
+        where: {
+          quoteOn: publicationRequest.forId
+        }
+      },
     }).then((payload) => {
       return {
-        quotes: payload.body.data.items || [],
-        pagination: payload.body.data.pageInfo || {},
+        quotes: payload.body.data.publications.items || [],
+        pagination: payload.body.data.publications.pageInfo || {},
       };
     });
   },

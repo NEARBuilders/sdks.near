@@ -5,6 +5,7 @@ const LightClient = {
             method: method || "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-Access-Token": LightClient.auth.accessToken || "",
                 ...(headers || {})
             },
             body: JSON.stringify({
