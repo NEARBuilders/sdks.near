@@ -66,7 +66,9 @@ return (daoId, proposalId, factoryId) => {
           ) {
             return (
               role.permissions.includes(
-                `${DaoSDK.proposalKinds[kindName].toString()}:${actionType.toString()}`
+                `${DaoSDK.proposalKinds[
+                  kindName
+                ].toString()}:${actionType.toString()}`
               ) ||
               role.permissions.includes(
                 `${DaoSDK.proposalKinds[kindName].toString()}:*`
@@ -214,16 +216,12 @@ return (daoId, proposalId, factoryId) => {
 
     // UTILS
     call: ({ methodName, args, deposit, gas, additionalCalls }) => {
-      const policy = DaoSDK.getPolicy();
-      const minDeposit = Big(policy?.proposal_bond);
-      // make sure that the deposit is more/equal than bond amount
-      const finalDeposit = Big(deposit).gt(minDeposit) ? deposit : minDeposit;
       const calls = [
         {
           contractName: daoId,
           methodName,
           args,
-          deposit: finalDeposit,
+          deposit: deposit,
           gas: gas
         }
       ];
@@ -271,12 +269,22 @@ return (daoId, proposalId, factoryId) => {
 
     // PROPOSALS
     addProposal: ({ proposal, deposit, gas, additionalCalls }) => {
+      const policy = DaoSDK.getPolicy();
+      if (!policy) {
+        return;
+      }
+      const minDeposit = Big(policy?.proposal_bond);
+      // make sure that the deposit is more/equal than bond amount
+      const finalDeposit = Big(deposit).gt(minDeposit)
+        ? Big(deposit)
+        : minDeposit;
+
       return DaoSDK.call({
         methodName: "add_proposal",
         args: {
           proposal: proposal
         },
-        deposit,
+        deposit: finalDeposit.toFixed(),
         gas,
         additionalCalls
       });
