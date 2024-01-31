@@ -278,37 +278,238 @@ const WHO_ACTED_ON_PUBLICATION_QUERY = `
   }
 `;
 
-const PUBLICATION_COMMENTS_QUERY = `
-  query Publication($request: PublicationRequest!) {
-    result: publication(request: $request) {
-      ... on Comment {
-        ...Comment
-      }
-    }
-  }
-`;
+const PUBLICATION_COMMENTS_QUERY = PUBLICATIONS_QUERY;
 
-const PUBLICATION_MIRRORS_QUERY = `
-  query Publication($request: PublicationRequest!) {
-    result: publication(request: $request) {
-      ... on Mirror {
-        ...Mirror
-      }
-    }
-  }
-`;
+const PUBLICATION_MIRRORS_QUERY = PUBLICATIONS_QUERY;
 
-const PUBLICATION_QUOTES_QUERY = `
-  query Publication($request: PublicationRequest!) {
-    result: publication(request: $request) {
-      ... on Quote {
-        ...Quote
-      }
-    }
-  }
-`;
+const PUBLICATION_QUOTES_QUERY = PUBLICATIONS_QUERY;
 
 const WHO_REACTED_PUBLICATION_QUERY = `
+  fragment ProfileFields on Profile {
+    id
+    handle {
+      ...HandleInfoFields
+      __typename
+    }
+    ownedBy {
+      ...NetworkAddressFields
+      __typename
+    }
+    signless
+    sponsor
+    createdAt
+    stats {
+      ...ProfileStatsFields
+      __typename
+    }
+    operations {
+      ...ProfileOperationsFields
+      __typename
+    }
+    interests
+    invitedBy {
+      id
+      handle {
+        ...HandleInfoFields
+        __typename
+      }
+      ownedBy {
+        ...NetworkAddressFields
+        __typename
+      }
+      metadata {
+        ...ProfileMetadataFields
+        __typename
+      }
+      __typename
+    }
+    invitesLeft
+    onchainIdentity {
+      proofOfHumanity
+      ens {
+        name
+        __typename
+      }
+      sybilDotOrg {
+        verified
+        source {
+          twitter {
+            handle
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      worldcoin {
+        isHuman
+        __typename
+      }
+      __typename
+    }
+    followNftAddress {
+      ...NetworkAddressFields
+      __typename
+    }
+    metadata {
+      ...ProfileMetadataFields
+      __typename
+    }
+    followModule {
+      ...FollowModuleFields
+      __typename
+    }
+    __typename
+  }
+
+  fragment HandleInfoFields on HandleInfo {
+    fullHandle
+    localName
+    suggestedFormatted {
+      localName
+      __typename
+    }
+    linkedTo {
+      nftTokenId
+      __typename
+    }
+    __typename
+  }
+
+  fragment NetworkAddressFields on NetworkAddress {
+    address
+    chainId
+    __typename
+  }
+
+  fragment ProfileStatsFields on ProfileStats {
+    id
+    followers
+    following
+    comments
+    posts
+    mirrors
+    quotes
+    __typename
+  }
+
+  fragment ProfileOperationsFields on ProfileOperations {
+    id
+    isBlockedByMe {
+      value
+      __typename
+    }
+    isFollowedByMe {
+      value
+      __typename
+    }
+    isFollowingMe {
+      value
+      __typename
+    }
+    hasBlockedMe {
+      value
+      __typename
+    }
+    canBlock
+  canUnblock
+    canFollow
+    canUnfollow
+    __typename
+  }
+
+  fragment ProfileMetadataFields on ProfileMetadata {
+    displayName
+    bio
+    rawURI
+    picture {
+      ... on ImageSet {
+        ...ImageSetFields
+        __typename
+      }
+      ... on NftImage {
+        image {
+          ...ImageSetFields
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    coverPicture {
+      ...ImageSetFields
+      __typename
+    }
+    attributes {
+      ...MetadataAttributeFields
+      __typename
+    }
+    __typename
+  }
+
+  fragment ImageSetFields on ImageSet {
+    optimized {
+      uri
+      __typename
+    }
+    raw {
+      uri
+      __typename
+    }
+    __typename
+  }
+
+  fragment MetadataAttributeFields on MetadataAttribute {
+    type
+    key
+    value
+    __typename
+  }
+
+  fragment FollowModuleFields on FollowModule {
+    ... on FeeFollowModuleSettings {
+      type
+      amount {
+        ...AmountFields
+        __typename
+      }
+      recipient
+      __typename
+    }
+    ... on RevertFollowModuleSettings {
+      type
+      __typename
+    }
+    ... on UnknownFollowModuleSettings {
+      type
+      __typename
+    }
+    __typename
+  }
+
+  fragment AmountFields on Amount {
+    asset {
+      ...Erc20Fields
+      __typename
+    }
+    value
+    __typename
+  }
+
+  fragment Erc20Fields on Asset {
+    ... on Erc20 {
+      name
+      symbol
+      decimals
+      contract {
+        ...NetworkAddressFields
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+
   fragment ProfileReactionResult on ProfileReactionResult {
     reaction
     reactionAt
@@ -316,7 +517,7 @@ const WHO_REACTED_PUBLICATION_QUERY = `
 
   fragment ProfileWhoReactedResult on ProfileWhoReactedResult {
     profile {
-      ...Profile
+      ...ProfileFields
     }
     reactions {
       ...ProfileReactionResult

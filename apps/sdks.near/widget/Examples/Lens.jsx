@@ -25,7 +25,8 @@ State.init({
   customProfileHandle: "lens/mattb",
   searchProfileTerm: "stani",
   searchPublicationTerm: "NEAR Protocol",
-  transaction: "8e00dbce-a897-44e4-9504-e4c15ee298ad",
+  transactionHash: "0xa46ff9fe2c68c0c5ff4347b449bf73373733d01a0377dc44bb1c684c2e702ca0",
+  transactionId: "",
   testPublication: "0x01-0x02c5",
   onlyOnce: true
 })
@@ -197,7 +198,7 @@ return (
       <br/>
 
       <Response>
-        {state.handleCreated !== null && state.handleCreated ? "Handle created successfully" : ""}
+        {state.handleCreated !== null && true === state.handleCreated ? "Handle created successfully" : ""}
         {state.handleCreated !== null && !state.handleCreated ? "Error creating handle, might be taken" : ""}
       </Response>
     </Panel>}
@@ -511,25 +512,25 @@ return (
 
         <button onClick={() => {
           LensSDK.publication.comments({
-            on: state.testPublication
-          }).then((profiles) => {
-            State.update({lastPublicationReadResult: profiles});
+            forId: state.testPublication
+          }).then((comments) => {
+            State.update({lastPublicationReadResult: comments});
           });
         }}>Comments</button>
 
         <button onClick={() => {
           LensSDK.publication.mirrors({
-            on: state.testPublication
-          }).then((profiles) => {
-            State.update({lastPublicationReadResult: profiles});
+            forId: state.testPublication
+          }).then((mirrors) => {
+            State.update({lastPublicationReadResult: mirrors});
           });
         }}>Mirrors</button>
 
         <button onClick={() => {
           LensSDK.publication.quotes({
-            on: state.testPublication
-          }).then((profiles) => {
-            State.update({lastPublicationReadResult: profiles});
+            forId: state.testPublication
+          }).then((quotes) => {
+            State.update({lastPublicationReadResult: quotes});
           });
         }}>Quotes</button>
         <br/><br/>
@@ -670,18 +671,20 @@ return (
     </Panel>
     <Panel>
       <p>Transactions</p>
-      <input type="text" value={state.transaction} />
+      <input type="text" value={state.transactionHash} />
       <button onClick={() => {
         LensSDK.transaction.status({
-          forTxHash: state.transaction
+          forTxHash: state.transactionHash
         }).then((result) => {
           State.update({lastTransactionResult: result});
         });
       }}>Transaction status</button>
+      <br/><br/>
 
+      <input type="text" placeholder="Relay Transaction ID" value={state.transactionId} />
       <button onClick={() => {
         LensSDK.transaction.txIdToTxHash({
-          for: state.transaction
+          for: state.transactionId
         }).then((result) => {
           State.update({lastTransactionResult: result.toString()});
         });
