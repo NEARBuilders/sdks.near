@@ -21,21 +21,27 @@ const PublicationAPI = {
     });
   },
   stats: (Client, publicationStatsRequest) => {
-    return Client.graphql(Publication.PUBLICATION_STATS_QUERY, {
-      publicationRequest: ApiHelper.clean(publicationStatsRequest.publication),
-      publicationStatsInputRequest: ApiHelper.clean(publicationStatsRequest.stats),
-      publicationStatsCountOpenActionArgsRequest: ApiHelper.clean(publicationStatsRequest.openAction)
-    }).then((payload) => {
+    return Client.graphql(Publication.PUBLICATION_STATS_QUERY, ApiHelper.clean({
+      publicationRequest: {
+        ...(ApiHelper.clean(publicationStatsRequest.publication || {}))
+      },
+      publicationStatsInputRequest: {
+        ...(ApiHelper.clean(publicationStatsRequest.stats || {}))
+      },
+      publicationStatsCountOpenActionArgsRequest: {
+        ...(ApiHelper.clean(publicationStatsRequest.openAction || {}))
+      }
+    })).then((payload) => {
       return payload.body.data.result || [];
     });
   },
   whoActed: (Client, whoActedOnPublicationRequest) => {
     return Client.graphql(Publication.WHO_ACTED_ON_PUBLICATION_QUERY, {
-      whoActedOnPublicationRequest
+      whoActedOnPublicationRequest: ApiHelper.clean(whoActedOnPublicationRequest)
     }).then((payload) => {
       return {
-        publications: payload.body.data.items || [],
-        pagination: payload.body.data.pageInfo || {},
+        publications: payload.body.data.result.items || [],
+        pagination: payload.body.data.result.pageInfo || {},
       };
     });
   },

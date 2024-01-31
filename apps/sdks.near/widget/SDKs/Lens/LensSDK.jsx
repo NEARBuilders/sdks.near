@@ -20,19 +20,22 @@ const {
 } = $("@sdks/lens#alpha");
 const { LightClient } = $("@sdks/light-client");
 
-return (Store, status) => {
+return (Store, status, enableTestnet) => {
   const LensSDK = {
     ...StatefulDependency(Store, status, "LensSDK"),
-    enableTestnet: () => (LightClient.url = Constants.TESTNET_URL),
-    enableMainnet: () => (LightClient.url = Constants.MAINNET_URL),
-    isTestnet: () => LightClient.url == Constants.TESTNET_URL,
+    enableTestnet: () => LensSDK.set("url", Constants.TESTNET_URL),
+    enableMainnet: () => LensSDK.set("url", Constants.MAINNET_URL),
+    isTestnet: () => LensSDK.get("url") == Constants.TESTNET_URL,
+    isMainnet: () => LensSDK.get("url") == Constants.MAINNET_URL,
     init: () => {
-      LensSDK.enableMainnet();
       LensSDK.initDependency({
         profile: null,
         auth: Interfaces.AUTH_INTERFACE,
+        requestInProgress: false,
+        url: enableTestnet ? Constants.TESTNET_URL : Constants.MAINNET_URL
       });
 
+      LightClient.url = LensSDK.get("url");
       LightClient.auth = LensSDK.get("auth");
       LightClient.tokenLifespan = Constants.JWT_TOKEN_LIFESPAN_SECONDS;
       LightClient.refreshTokenLifespan =
@@ -43,6 +46,7 @@ return (Store, status) => {
     isAuthenticated: () => !!LensSDK.get("profile").id,
     getAccessToken: () => LensSDK.get("auth").accessToken || null,
     getProfileId: () => LensSDK.get("profile").id || null,
+    isRequestInProgress: () => LensSDK.get("requestInProgress"),
     health: {
       ping: () =>
         LensSDK._call(HealthAPI.ping).then(
@@ -122,11 +126,11 @@ return (Store, status) => {
         ),
     },
     profile: {
-      create: (createProfileRequest) =>
+      create: (createProfileWithHandleRequest) =>
         LensSDK._call(
           ProfileAPI.create,
-          ProfileRequests.CREATE_PROFILE_REQUEST,
-          createProfileRequest
+          ProfileRequests.CREATE_PROFILE_WITH_HANDLE_REQUEST,
+          createProfileWithHandleRequest
         ),
       fetch: (profileRequest) =>
         LensSDK._call(
@@ -292,9 +296,9 @@ return (Store, status) => {
       reactions: {
         fetch: () => {},
         add: (publicationReactionRequest) => 
-          LensSDK.publication._react(PublicationAPI.addReaction, publicationReactionRequest),
+          LensSDK.publication.reactions._react(PublicationAPI.addReaction, publicationReactionRequest),
         remove: (publicationReactionRequest) => 
-          LensSDK.publication._react(PublicationAPI.removeReaction, publicationReactionRequest),
+          LensSDK.publication.reactions._react(PublicationAPI.removeReaction, publicationReactionRequest),
         _react: (reactionEndpoint, publicationReactionRequest) =>
           LensSDK._call(
             reactionEndpoint,
@@ -330,7 +334,7 @@ return (Store, status) => {
         ),
     },
     notifications: {
-      fetch: () => (notificationRequest) => 
+      fetch: (notificationRequest) => 
         LensSDK._call(
           NotificationAPI.fetch,
           NotificationRequests.NOTIFICATION_REQUEST,
@@ -352,11 +356,14 @@ return (Store, status) => {
         ),
     },
     _call: (apiMethod, requestObject, dataObject) => {
-      console.log(dataObject);
+      LensSDK.set("requestInProgress", true);
+
       return apiMethod(
         LightClient,
         dataObject ? ApiHelper.intersect(requestObject, dataObject) : null
-      );
+      ).finally(() => {
+        LensSDK.set("requestInProgress", false);
+      });
     }
   };
 

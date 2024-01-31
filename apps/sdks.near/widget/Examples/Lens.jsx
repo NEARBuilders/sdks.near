@@ -4,6 +4,7 @@ const { Constants } = $("@sdks/lens/definitions");
 
 State.init({
   evmAddress: "",
+  handleToCreate: "",
   lastAuthenticationResult: "",
   lastProfileResult: "",
   lastProfileWriteResult: "",
@@ -11,6 +12,9 @@ State.init({
   lastPublicationWriteResult: "",
   lastPublicationSearchResult: "",
   lastProfileSearchResult: "",
+  lastNotificationResult: "",
+  lastTransactionResult: "",
+  handleCreated: null,
   alive: null,
   profiles: [],
   login: null,
@@ -20,17 +24,29 @@ State.init({
   revoke: null,
   customProfileHandle: "lens/mattb",
   searchProfileTerm: "stani",
-  searchPublicationTerm: "NEAR Protocol"
+  searchPublicationTerm: "NEAR Protocol",
+  transaction: "8e00dbce-a897-44e4-9504-e4c15ee298ad",
+  testPublication: "0x01-0x02c5",
+  onlyOnce: true
 })
 
 LensSDK = new LensSDK(State, state);
 
 if (!state.evmAddress && Ethers.provider()) {
-  const [address] = Ethers.send("eth_requestAccounts", []);
+  Ethers.provider().send("eth_requestAccounts", []).then(([address]) => {
+    if (address) {
+      State.update({evmAddress: address});
+    }  
+  });
+}
 
-  if (address) {
-    State.update({evmAddress: address});
-  }
+if (LensSDK.isTestnet() && state.onlyOnce) {
+  State.update({
+    customProfileHandle: "test/mattb",
+    searchPublicationTerm: "test",
+    testPublication: "0xa0-0x02-DA-25690797",
+    onlyOnce: false
+  });
 }
 
 const Panel = styled.div`
@@ -40,7 +56,30 @@ const Panel = styled.div`
   margin-bottom:20px;
 
   button {
+    cursor:pointer;
     margin: 10px 3px;
+    padding:7px 20px;
+    border-radius:30px;
+    border:0;
+    background-color:rgba(0,0,0,.1);
+    font-weight:bold;
+    color:#000;
+    font-size:.8rem;
+    box-shadow: 0 0 0 0px rgba(0,0,0,.05);
+    transition: all .2s;
+
+    &:hover {
+      transition: all .2s;
+      box-shadow: 0 0 0 3px rgba(0,0,0,.1);
+    }
+  }
+
+  input {
+    max-width:300px;
+    margin: 10px 0;
+    border:0;
+    border:2px solid rgba(0,0,0,.05);
+    padding:10px 20px;
   }
 
   p {
@@ -50,20 +89,82 @@ const Panel = styled.div`
     margin:0;
     margin-bottom:15px;
   }
+`;
 
-  .note {
-    display:inline-block;
-    font-size:.8rem;
-    margin:10px 0;
-    background-color:#F8F3D6;
-    border:1px solid #F2EAC4;
-    padding:10px;
-    border-radius:10px;
+const Loading = styled.div`
+  width:100%;
+  height:100%;
+  position:fixed;
+  top:0;
+  left:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  transition: all .2s;
+  pointer-events:none;
+
+  &.show {
+    transition: all .2s;
+    opacity:1;
   }
+
+  @keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 5px solid #1A1D20;
+    border-bottom-color: #C3E4CD;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation .5s linear infinite;
+  }
+`;
+
+const Warning = styled.div`
+  display:table;
+  font-size:.8rem;
+  margin:10px 0;
+  background-color:#F8F3D6;
+  border:1px solid #F2EAC4;
+  padding:10px;
+  border-radius:10px;
+  font-weight:bold;
+`;
+
+const Response = styled.div`
+  width:100%;
+  height:300px;
+  overflow-y:auto;
+  border-radius:10px;
+  background-color:rgba(0,0,0,.06);
+  border:1px solid rgba(0,0,0,.05);
+  color:rgba(0,0,0,.5);
+  font-size:.8rem;
+  font-weight:bold;
+  padding:20px;
+  overflow-wrap:break-word;
 `;
 
 return (
   <>
+    <Loading className={`${LensSDK.isRequestInProgress() ? "show" : ""}`}>
+      <div className="spinner">
+      </div>
+    </Loading>
+    <h2 style={{margin: "20px 0", fontWeight: "bold"}}>Lens SDK API Dashboard <button style={{marginLeft: "10px"}} onClick={ () => LensSDK.isTestnet() ? LensSDK.enableMainnet() : LensSDK.enableTestnet() }>
+      Switch to {LensSDK.isTestnet() ? "Mainnet" : "Testnet"}
+    </button></h2>
+    {LensSDK.isTestnet() && <Warning>Warning: Test environment requests might require different parameters.</Warning>}
     <Panel>
       <p>Health</p>
       <button onClick={() => {
@@ -72,12 +173,37 @@ return (
         })
       }}>Check API status</button>
       <br/><br/>
-      {null === state.alive && "Nothing to show yet"}
-      {state.alive && "Alive"}
-      {false === state.alive && "Not alive"}
+      <Response>
+        {null === state.alive && "Nothing to show yet"}
+        {state.alive && "Alive"}
+        {false === state.alive && "Not alive"}
+      </Response>
     </Panel>
+    {LensSDK.isTestnet() && <Panel>
+      <p>Create a Test Lens Profile</p>
+      <Warning>Important: You need to connect your wallet</Warning>
+      <Web3Connect /><br/><br/>
+      Write down a name (without .lens or .testnet)
+      <br/><br/>
+      <input placeholder="Enter handle" value={state.handleToCreate} onChange={(e) => State.update({handleToCreate: e.target.value})} />
+      <button onClick={() => {
+        LensSDK.profile.create({
+          handle: state.handleToCreate,
+          to: state.evmAddress
+        }).then((result) => {
+          State.update({handleCreated: result});
+        });
+      }}>Create Lens Handle</button>
+      <br/>
+
+      <Response>
+        {state.handleCreated !== null && state.handleCreated ? "Handle created successfully" : ""}
+        {state.handleCreated !== null && !state.handleCreated ? "Error creating handle, might be taken" : ""}
+      </Response>
+    </Panel>}
     <Panel id="authenticate">
       <p>Authentication</p>
+      <Warning>Warning: Some endpoints require to be authenticated to work properly (Verify, refresh authentication...)</Warning>
       <Web3Connect />
       <button onClick={() => {
         LensSDK.authentication.profiles({
@@ -87,13 +213,17 @@ return (
         })
       }}>Get profiles managed</button>
       <button onClick={() => {
-        LensSDK.authentication.login({
-          signedBy: state.evmAddress,
-          for: state.profiles[0].id
-        }).then((result) => {
-          State.update({lastAuthenticationResult: result, login: result});
+        LensSDK.authentication.profiles({
+          for: state.evmAddress
+        }).then((profiles) => {
+          LensSDK.authentication.login({
+            signedBy: state.evmAddress,
+            for: profiles[0].id
+          }).then((result) => {
+            State.update({lastAuthenticationResult: result, login: result});
+          })
         })
-      }}>Authenticate</button>
+      }}>Authenticate on first profile</button>
       <button onClick={() => {
         LensSDK.authentication.verify().then((result) => {
           State.update({lastAuthenticationResult: result, verify: result});
@@ -119,13 +249,15 @@ return (
       }}>Revoke authentication</button>
       
       <br/><br/>
-      {state.lastAuthenticationResult ? JSON.stringify(state.lastAuthenticationResult) : "Nothing to show yet"}
+      <Response>
+        {state.lastAuthenticationResult ? JSON.stringify(state.lastAuthenticationResult) : "Nothing to show yet"}
+      </Response>
     </Panel>
     <Panel>
       <p>Profile</p>
       <Panel>
         <p>Read</p>
-        <p class="note">Warning: Some endpoints require to be authenticated to work properly (Action History, isFollowedByMe...)</p>
+        <Warning>Warning: Some endpoints require to be authenticated to work properly (Action History, isFollowedByMe...)</Warning>
         <input placeholder="Profile full handle" value={state.customProfileHandle} onChange={(e) => State.update({customProfileHandle: e.target.value})} />
         <br/>
         <button onClick={() => {
@@ -293,19 +425,19 @@ return (
         }}>Profile has blocked me</button>
 
         <br/><br/>
-        {state.lastProfileResult ? JSON.stringify(state.lastProfileResult) : "Nothing to show yet"}
+        <Response>
+          {state.lastProfileResult ? JSON.stringify(state.lastProfileResult) : "Nothing to show yet"}
+        </Response>
       </Panel>
       <br/><br/>
       <Panel>
         <p>Write</p>
-        <p class="note">Warning: <a href="#authenticate">Authentication</a> required. They perform real actions</p>
-        <br/>
-
+        <Warning>Warning: <a href="#authenticate">Authentication</a> required. Requests perform real actions.</Warning>
         <button onClick={() => {
           LensSDK.profile.block({
             profiles: ["0x73b1"]
           }).then((result) => {
-            State.update({lastProfileWriteResult: result.toString()});
+            State.update({lastProfileWriteResult: result});
           });
         }}>Block profile</button>
 
@@ -325,18 +457,19 @@ return (
         }}>Report profile</button>
 
         <br/><br/>
-        {state.lastProfileWriteResult ? JSON.stringify(state.lastProfileWriteResult) : "Nothing to show yet"}
+        <Response>
+          {state.lastProfileWriteResult ? JSON.stringify(state.lastProfileWriteResult) : "Nothing to show yet"}
+        </Response>
       </Panel>
     </Panel>
     <Panel>
       <p>Publication</p>
+      <Warning>Warning: Some endpoints require to be authenticated to work properly</Warning>
       <Panel>
         <p>Read</p>
-        <p className="note">Warning: Some endpoints require to be authenticated to work properly</p>
-        <br/><br/>
         <button onClick={() => {
           LensSDK.publication.fetch({
-            forId: '0x01-0x02c5'
+            forId: state.testPublication
           }).then((publication) => {
             State.update({lastPublicationReadResult: publication});
           });
@@ -344,14 +477,133 @@ return (
         <button onClick={() => {
           LensSDK.publication.fetchAll({
             where: {
-              from: "0x01"
+              from: LensSDK.getProfileId() || "0x01"
             }
           }).then((publication) => {
             State.update({lastPublicationReadResult: publication});
           });
         }}>Publications</button>
+
+        <button onClick={() => {
+          LensSDK.publication.stats({
+            publication: {
+              forId: state.testPublication
+            },
+            stats: {
+              customFilters: ["GARDENERS"],
+              metadata: {
+                locale: "en",
+                mainContentFocus: "TEXT_ONLY"
+              }
+            }
+          }).then((publication) => {
+            State.update({lastPublicationReadResult: publication});
+          });
+        }}>Stats</button>
+
+        <button onClick={() => {
+          LensSDK.publication.whoActed({
+            on: state.testPublication
+          }).then((profiles) => {
+            State.update({lastPublicationReadResult: profiles});
+          });
+        }}>Who acted</button>
+
+        <button onClick={() => {
+          LensSDK.publication.comments({
+            on: state.testPublication
+          }).then((profiles) => {
+            State.update({lastPublicationReadResult: profiles});
+          });
+        }}>Comments</button>
+
+        <button onClick={() => {
+          LensSDK.publication.mirrors({
+            on: state.testPublication
+          }).then((profiles) => {
+            State.update({lastPublicationReadResult: profiles});
+          });
+        }}>Mirrors</button>
+
+        <button onClick={() => {
+          LensSDK.publication.quotes({
+            on: state.testPublication
+          }).then((profiles) => {
+            State.update({lastPublicationReadResult: profiles});
+          });
+        }}>Quotes</button>
         <br/><br/>
-        {state.lastPublicationReadResult ? JSON.stringify(state.lastPublicationReadResult) : "Nothing to show yet"}
+
+        <Response>
+          {state.lastPublicationReadResult ? JSON.stringify(state.lastPublicationReadResult) : "Nothing to show yet"}
+        </Response>
+      </Panel>
+
+      <Panel>
+        <p>Write</p>
+        <button onClick={() => {
+            LensSDK.publication.reactions.add({
+              reaction: "UPVOTE",
+              for: state.testPublication
+            }).then((result) => {
+              State.update({lastPublicationWriteResult: result.toString()});
+            });
+          }}>Add reaction (Up Vote)</button>
+
+          <button onClick={() => {
+            LensSDK.publication.reactions.remove({
+              reaction: "UPVOTE",
+              for: state.testPublication
+            }).then((result) => {
+              State.update({lastPublicationWriteResult: result.toString()});
+            });
+          }}>Remove reaction (Up vote)</button>
+
+          <button onClick={() => {
+            LensSDK.publication.reactions.add({
+              reaction: "DOWNVOTE",
+              for: state.testPublication
+            }).then((result) => {
+              State.update({lastPublicationWriteResult: result.toString()});
+            });
+          }}>Add reaction (Down Vote)</button>
+
+          <button onClick={() => {
+            LensSDK.publication.reactions.remove({
+              reaction: "DOWNVOTE",
+              for: state.testPublication
+            }).then((result) => {
+              State.update({lastPublicationWriteResult: result.toString()});
+            });
+          }}>Remove reaction (Down vote)</button>
+
+          <button onClick={() => {
+            LensSDK.publication.hide({
+              for: state.testPublication
+            }).then((result) => {
+              State.update({lastPublicationWriteResult: result});
+            });
+          }}>Hide post</button>
+
+          <button onClick={() => {
+            LensSDK.publication.report({
+              for: state.testPublication,
+              reason: {
+                spamReason: {
+                  reason: "SPAM",
+                  subreason: "REPETITIVE"
+                }
+              },
+              additionalComments: "Test API Integration"
+            }).then((result) => {
+              State.update({lastPublicationWriteResult: result});
+            });
+          }}>Report post</button>
+          
+          <br/><br/>
+          <Response>
+            {state.lastPublicationWriteResult ? JSON.stringify(state.lastPublicationWriteResult) : "Nothing to show yet"}
+          </Response>
       </Panel>
     </Panel>
 
@@ -369,7 +621,10 @@ return (
           });
         }}>Search profiles</button>
         <br/><br/>
-        {state.lastProfileSearchResult ? JSON.stringify(state.lastProfileSearchResult) : "Nothing to show yet"}
+        
+        <Response>
+          {state.lastProfileSearchResult ? JSON.stringify(state.lastProfileSearchResult) : "Nothing to show yet"}
+        </Response>
       </Panel>
 
       <Panel>
@@ -389,8 +644,53 @@ return (
           });
         }}>Search publications</button>
         <br/><br/>
-        {state.lastPublicationSearchResult ? JSON.stringify(state.lastPublicationSearchResult) : "Nothing to show yet"}
+        
+        <Response>
+          {state.lastPublicationSearchResult ? JSON.stringify(state.lastPublicationSearchResult) : "Nothing to show yet"}
+        </Response>
       </Panel>
+    </Panel>
+    <Panel>
+      <p>Notifications</p>
+      <Warning>Warning: To fetch notifications you need to be authenticated</Warning>
+      <button onClick={() => {
+          LensSDK.notifications.fetch({
+            where: {
+              customFilters: ["GARDENERS"]
+            }
+          }).then((notifications) => {
+            State.update({lastNotificationResult: notifications});
+          });
+        }}>Fetch</button>
+
+        <br/><br/>
+        <Response>
+          {state.lastNotificationResult ? JSON.stringify(state.lastNotificationResult) : "Nothing to show yet"}
+        </Response>
+    </Panel>
+    <Panel>
+      <p>Transactions</p>
+      <input type="text" value={state.transaction} />
+      <button onClick={() => {
+        LensSDK.transaction.status({
+          forTxHash: state.transaction
+        }).then((result) => {
+          State.update({lastTransactionResult: result});
+        });
+      }}>Transaction status</button>
+
+      <button onClick={() => {
+        LensSDK.transaction.txIdToTxHash({
+          for: state.transaction
+        }).then((result) => {
+          State.update({lastTransactionResult: result.toString()});
+        });
+      }}>Transaction ID to Transaction Hash</button>
+
+      <br/><br/>
+      <Response>
+        {state.lastTransactionResult ? JSON.stringify(state.lastTransactionResult) : "Nothing to show yet"}
+      </Response>
     </Panel>
   </>
 );

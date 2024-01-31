@@ -4,10 +4,10 @@ const { ProfileMutations } = $("@sdks/lens/mutations#alpha");
 const { ApiHelper } = $("@sdks/lens/utils#alpha");
 
 const ProfileAPI = {
-  create: (Client, createProfileRequest) => {
+  create: (Client, createProfileWithHandleRequest) => {
     return Client.graphql(ProfileMutations.CREATE_PROFILE_MUTATION, {
-      createProfileRequest,
-    }).then((payload) => payload.body || {});
+      createProfileWithHandleRequest,
+    }).then((payload) => !payload.body.data.createProfileWithHandle.reason);
   },
   fetch: (Client, profileRequest) => {
     return Client.graphql(Profile.PROFILE_QUERY, {

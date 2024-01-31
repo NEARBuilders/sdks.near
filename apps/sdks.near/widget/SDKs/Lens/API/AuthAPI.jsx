@@ -41,7 +41,7 @@ return {
   },
   verify: (Client, verifyRequest) => {
     return Client.graphql(Auth.VERIFY_TOKEN_QUERY, { verifyRequest }).then(
-      (payload) => (payload.body.data.verify || false) == true
+      (payload) => payload.body.data.verify == true
     );
   },
 };

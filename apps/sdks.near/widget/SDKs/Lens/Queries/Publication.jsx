@@ -4,10 +4,6 @@ const PUBLICATIONS_QUERY = `query Publications($publicationsRequest: Publication
 
 const PUBLICATION_STATS_QUERY = `
   fragment PublicationStats on PublicationStats {
-    additionalArgs {
-      forApps
-      customFilters
-    }
     id
     comments
     mirrors
@@ -20,8 +16,8 @@ const PUBLICATION_STATS_QUERY = `
 
   query PublicationStats(
     $publicationRequest: PublicationRequest!
-    $publicationStatsInputRequest: PublicationStatsInput!
-    $publicationStatsCountOpenActionArgsRequest: PublicationStatsCountOpenActionArgs!
+    $publicationStatsInputRequest: PublicationStatsInput
+    $publicationStatsCountOpenActionArgsRequest: PublicationStatsCountOpenActionArgs
   ) {
     result: publication(request: $publicationRequest) {
       ... on Post {
@@ -44,13 +40,239 @@ const PUBLICATION_STATS_QUERY = `
 `;
 
 const WHO_ACTED_ON_PUBLICATION_QUERY = `
+  fragment ProfileFields on Profile {
+    id
+    handle {
+      ...HandleInfoFields
+      __typename
+    }
+    ownedBy {
+      ...NetworkAddressFields
+      __typename
+    }
+    signless
+    sponsor
+    createdAt
+    stats {
+      ...ProfileStatsFields
+      __typename
+    }
+    operations {
+      ...ProfileOperationsFields
+      __typename
+    }
+    interests
+    invitedBy {
+      id
+      handle {
+        ...HandleInfoFields
+        __typename
+      }
+      ownedBy {
+        ...NetworkAddressFields
+        __typename
+      }
+      metadata {
+        ...ProfileMetadataFields
+        __typename
+      }
+      __typename
+    }
+    invitesLeft
+    onchainIdentity {
+      proofOfHumanity
+      ens {
+        name
+        __typename
+      }
+      sybilDotOrg {
+        verified
+        source {
+          twitter {
+            handle
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      worldcoin {
+        isHuman
+        __typename
+      }
+      __typename
+    }
+    followNftAddress {
+      ...NetworkAddressFields
+      __typename
+    }
+    metadata {
+      ...ProfileMetadataFields
+      __typename
+    }
+    followModule {
+      ...FollowModuleFields
+      __typename
+    }
+    __typename
+  }
+
+  fragment HandleInfoFields on HandleInfo {
+    fullHandle
+    localName
+    suggestedFormatted {
+      localName
+      __typename
+    }
+    linkedTo {
+      nftTokenId
+      __typename
+    }
+    __typename
+  }
+
+  fragment NetworkAddressFields on NetworkAddress {
+    address
+    chainId
+    __typename
+  }
+
+  fragment ProfileStatsFields on ProfileStats {
+    id
+    followers
+    following
+    comments
+    posts
+    mirrors
+    quotes
+    __typename
+  }
+
+  fragment ProfileOperationsFields on ProfileOperations {
+    id
+    isBlockedByMe {
+      value
+      __typename
+    }
+    isFollowedByMe {
+      value
+      __typename
+    }
+    isFollowingMe {
+      value
+      __typename
+    }
+    hasBlockedMe {
+      value
+      __typename
+    }
+    canBlock
+  canUnblock
+    canFollow
+    canUnfollow
+    __typename
+  }
+
+  fragment ProfileMetadataFields on ProfileMetadata {
+    displayName
+    bio
+    rawURI
+    picture {
+      ... on ImageSet {
+        ...ImageSetFields
+        __typename
+      }
+      ... on NftImage {
+        image {
+          ...ImageSetFields
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    coverPicture {
+      ...ImageSetFields
+      __typename
+    }
+    attributes {
+      ...MetadataAttributeFields
+      __typename
+    }
+    __typename
+  }
+
+  fragment ImageSetFields on ImageSet {
+    optimized {
+      uri
+      __typename
+    }
+    raw {
+      uri
+      __typename
+    }
+    __typename
+  }
+
+  fragment MetadataAttributeFields on MetadataAttribute {
+    type
+    key
+    value
+    __typename
+  }
+
+  fragment FollowModuleFields on FollowModule {
+    ... on FeeFollowModuleSettings {
+      type
+      amount {
+        ...AmountFields
+        __typename
+      }
+      recipient
+      __typename
+    }
+    ... on RevertFollowModuleSettings {
+      type
+      __typename
+    }
+    ... on UnknownFollowModuleSettings {
+      type
+      __typename
+    }
+    __typename
+  }
+
+  fragment AmountFields on Amount {
+    asset {
+      ...Erc20Fields
+      __typename
+    }
+    value
+    __typename
+  }
+
+  fragment Erc20Fields on Asset {
+    ... on Erc20 {
+      name
+      symbol
+      decimals
+      contract {
+        ...NetworkAddressFields
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+
   query WhoActedOnPublication($whoActedOnPublicationRequest: WhoActedOnPublicationRequest!) {
     result: whoActedOnPublication(request: $whoActedOnPublicationRequest) {
       items {
-        ...Profile
+        ...ProfileFields
       }
       pageInfo {
-        ...PaginatedResultInfo
+        next
+        __typename
       }
     }
   }

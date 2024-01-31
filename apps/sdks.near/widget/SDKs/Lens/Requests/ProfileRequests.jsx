@@ -1,7 +1,7 @@
 const $ = VM.require(`sdks.near/widget/Loader`);
 const { Constants } = $("@sdks/lens/definitions#alpha");
 
-const CREATE_PROFILE_REQUEST = {
+const CREATE_PROFILE_WITH_HANDLE_REQUEST = {
   handle: "",
   to: "",
 };
@@ -63,7 +63,7 @@ const PROFILE_ACTION_HISTORY_REQUEST = {
 const PROFILE_ONCHAIN_IDENTITY_REQUEST = PROFILE_REQUEST;
 
 return {
-  CREATE_PROFILE_REQUEST,
+  CREATE_PROFILE_WITH_HANDLE_REQUEST,
   PROFILE_REQUEST,
   PROFILES_WHERE_REQUEST,
   PROFILES_REQUEST,

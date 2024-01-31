@@ -1,8 +1,8 @@
 // Only works on Lens Testnet for now
 const CREATE_PROFILE_MUTATION = `
-    mutation CreateProfile($createProfileRequest: CreateProfileRequest!) {
+    mutation CreateProfile($createProfileWithHandleRequest: CreateProfileWithHandleRequest!) {
       createProfileWithHandle(
-        request: $createProfileRequest
+        request: $createProfileWithHandleRequest
       ) {
         ... on RelaySuccess {
           txHash
