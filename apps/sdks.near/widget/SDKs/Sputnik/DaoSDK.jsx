@@ -36,7 +36,7 @@ return (daoId, proposalId, factoryId) => {
             .map((role) => {
               const group = role.kind.Group;
               return group;
-            })
+            })?.[0]
         : [];
     },
     // return [{ members:{},permissions:{},name:"" }]
