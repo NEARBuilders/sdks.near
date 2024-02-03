@@ -1,3 +1,5 @@
+const StatefulDependency = VM.require("sdks.near/widget/Abstracts.StatefulDependency");
+
 let TYPES = {};
 const TYPE_LIBRARY = "@";
 const TYPE_IMAGE = "img:";
@@ -12,12 +14,22 @@ const getWidgetPath = (account, dependency, version) => `${account}/widget/${dep
 
 let loaders = {};
 loaders[TYPES[TYPE_LIBRARY]] = {
-  string: (account, dependency, version) => {
-    let result = {};
-    result[dependency.split(".").pop()] = VM.require(
-      getWidgetPath(account, dependency, version)
-    );
-    return result;
+  string: (account, dependency, version, Store) => {
+    if (Store) {
+      let name = dependency.split(".").pop();
+
+      Store.update({
+        [name]: VM.require(getWidgetPath(account, dependency, version))
+      });
+
+      return Store.get(name) || {};
+    } else {
+      let result = {};
+      result[dependency.split(".").pop()] = VM.require(
+        getWidgetPath(account, dependency, version)
+      );
+      return result;
+    }
   },
   object: (account, dependencies, version) => {
     let result = {};
@@ -83,27 +95,28 @@ const getResource = (manifest, resourceType) =>
   resourceType in manifest ? manifest[resourceType] : {};
 const getDependencies = (resource, path) =>
   path.split("/").reduce((path, nextPath) => (path || {})[nextPath], resource);
-const loadDependencies = (account, loaderName, dependencies) =>
+const loadDependencies = (account, loaderName, dependencies, Store) =>
   loaders[loaderName || TYPES[TYPE_LIBRARY]][
     typeof dependencies !== "undefined" ? typeof dependencies : "void"
-  ](account, dependencies);
+  ](account, dependencies, Store);
 
 const mapVersion = (version, path, manifest) => {
   let dependency = path.split("/").shift();
-  let releases = manifest["releases"] || {};
+  let releases = manifest["releases"] || {};
 
   return version && dependency in releases && version in releases[dependency] ? releases[dependency][version] : null;
 }
 
-const load = (account, resourceType, path, version) => {
+const load = (account, resourceType, path, version, Store) => {
   const manifest = getManifest(account) || {};
 
   return loadDependencies(
     account,
     resourceType,
     getDependencies(getResource(manifest, resourceType), path),
-    mapVersion(version, path, manifest)
+    mapVersion(version, path, manifest),
+    Store
   );
 }
 
-return (namespace) => load(...parseRequest(namespace));
+return (namespace, Store) => load(...parseRequest(namespace), Store);

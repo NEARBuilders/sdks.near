@@ -14,7 +14,7 @@ return {
       queries: resolve("SDKs.Lens.Queries"),
       mutations: resolve("SDKs.Lens.Mutations"),
       types: resolve("SDKs.Lens.Types"),
-      filters: resolve("SDKs.Lens.Filters")
+      filters: resolve("SDKs.Lens.Filters"),
     },
     "lens-sdk": "SDKs.Lens.LensSDK",
     "light-client": "SDKs.LightClient",
@@ -29,11 +29,12 @@ return {
     blockies: ["Abstracts.ExternalDependency", "Utils.Blockies"],
     "routes-manager": "Utils.RoutesManager",
     sputnik: ["SDKs.Sputnik.DaoSDK"],
-    multisig: ["SDKs.Near.MultiSigSDK"]
+    multisig: ["SDKs.Near.MultiSigSDK"],
+    hooks: resolve("Hooks."),
   },
   links: {
     telegram: "@OxMattB",
     twitter: "@0xMattB",
-    near: "@mattb.near"
-  }
+    near: "@mattb.near",
+  },
 };
