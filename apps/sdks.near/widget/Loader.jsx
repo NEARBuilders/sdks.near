@@ -1,5 +1,3 @@
-const StatefulDependency = VM.require("sdks.near/widget/Abstracts.StatefulDependency");
-
 let TYPES = {};
 const TYPE_LIBRARY = "@";
 const TYPE_IMAGE = "img:";

@@ -24,16 +24,20 @@ return (Store, status, enableTestnet) => {
   const LensSDK = {
     ...StatefulDependency(Store, status, "LensSDK"),
     version: "alpha",
-    enableTestnet: () => LensSDK.set("url", Constants.TESTNET_URL),
-    enableMainnet: () => LensSDK.set("url", Constants.MAINNET_URL),
-    isTestnet: () => LensSDK.get("url") == Constants.TESTNET_URL,
-    isMainnet: () => LensSDK.get("url") == Constants.MAINNET_URL,
+    enableTestnet: () =>
+      LensSDK.set("url", "https://api-v2-mumbai-live.lens.dev"),
+    enableMainnet: () => LensSDK.set("url", "https://api-v2.lens.dev"),
+    isTestnet: () =>
+      LensSDK.get("url") == "https://api-v2-mumbai-live.lens.dev",
+    isMainnet: () => LensSDK.get("url") == "https://api-v2.lens.dev",
     init: () => {
       LensSDK.initDependency({
         profile: null,
         auth: Interfaces.AUTH_INTERFACE,
         requestInProgress: false,
-        url: enableTestnet ? Constants.TESTNET_URL : Constants.MAINNET_URL,
+        url: enableTestnet
+          ? "https://api-v2-mumbai-live.lens.dev"
+          : "https://api-v2.lens.dev",
         tryGetAuth: true,
       });
 
@@ -44,7 +48,7 @@ return (Store, status, enableTestnet) => {
         Constants.JWT_REFRESH_TOKEN_LIFESPAN_SECONDS;
 
       LensSDK.tryGetAuth();
-  
+
       return LensSDK;
     },
     isAuthenticated: () => !!LensSDK.get("profile").id,
@@ -72,7 +76,7 @@ return (Store, status, enableTestnet) => {
           challengeRequest
         ).then((challenge) => {
           LightClient.challenge = challenge;
-  
+
           return Ethers.provider()
             .getSigner()
             .signMessage(challenge.text)
@@ -81,28 +85,34 @@ return (Store, status, enableTestnet) => {
                 AuthRequests.SIGNED_AUTH_CHALLENGE_REQUEST;
               signedAuthChallengeRequest.id = LightClient.challenge.id;
               signedAuthChallengeRequest.signature = signature;
-  
+
               return LensSDK._call(
                 AuthAPI.authenticate,
                 AuthRequests.SIGNED_AUTH_CHALLENGE_REQUEST,
                 signedAuthChallengeRequest
               ).then((auth) => {
                 LensSDK.updateAuth(auth);
-  
-                return LensSDK.authentication.profiles({
-                  for: challengeRequest.signedBy
-                }).then((profilesManaged) => {
-                  let profile = profilesManaged.find((profile) => profile.id == challengeRequest.for);
 
-                  return LensSDK.profile.fetch({
-                    forHandle: profile.handle.fullHandle
-                  }).then((profile) => {
-                    LensSDK.set("profile", profile);
-                    LensSDK.persist("profileId", profile.id);
+                return LensSDK.authentication
+                  .profiles({
+                    for: challengeRequest.signedBy,
+                  })
+                  .then((profilesManaged) => {
+                    let profile = profilesManaged.find(
+                      (profile) => profile.id == challengeRequest.for
+                    );
 
-                    return profile;
+                    return LensSDK.profile
+                      .fetch({
+                        forHandle: profile.handle.fullHandle,
+                      })
+                      .then((profile) => {
+                        LensSDK.set("profile", profile);
+                        LensSDK.persist("profileId", profile.id);
+
+                        return profile;
+                      });
                   });
-                });
               });
             });
         }),
@@ -118,7 +128,7 @@ return (Store, status, enableTestnet) => {
           LensSDK.get("auth")
         ).then((auth) => {
           LensSDK.updateAuth(auth);
-  
+
           return LensSDK.get("profile");
         }),
       revoke: (revokeAuthenticationRequest) =>
@@ -128,7 +138,9 @@ return (Store, status, enableTestnet) => {
           revokeAuthenticationRequest
         ),
       verify: () =>
-        LensSDK._call(AuthAPI.verify, AuthRequests.VERIFY_REQUEST, { accessToken: LensSDK.get("auth").accessToken }),
+        LensSDK._call(AuthAPI.verify, AuthRequests.VERIFY_REQUEST, {
+          accessToken: LensSDK.get("auth").accessToken,
+        }),
       list: (approvedAuthenticationRequest) =>
         LensSDK._call(
           AuthAPI.list,
@@ -257,9 +269,14 @@ return (Store, status, enableTestnet) => {
           ProfileRequests.PROFILE_REQUEST,
           profileRequest
         ),
-      fetchPublications: (profileId) => LensSDK.publications.fetchAll({from: [profileId]}),
-      isHandleAvailable: (handle) => LensSDK.profile.fetch({ forHandle: handle }).then((profile) => !profile.id),
-      whoActedOnPublication: (whoActedOnPublicationRequest) => LensSDK.publication.whoActed(whoActedOnPublicationRequest)
+      fetchPublications: (profileId) =>
+        LensSDK.publications.fetchAll({ from: [profileId] }),
+      isHandleAvailable: (handle) =>
+        LensSDK.profile
+          .fetch({ forHandle: handle })
+          .then((profile) => !profile.id),
+      whoActedOnPublication: (whoActedOnPublicationRequest) =>
+        LensSDK.publication.whoActed(whoActedOnPublicationRequest),
     },
     publication: {
       fetch: (publicationRequest) =>
@@ -274,31 +291,31 @@ return (Store, status, enableTestnet) => {
           PublicationRequests.PUBLICATIONS_REQUEST,
           publicationsRequest
         ),
-      stats: (publicationStatsRequest) => 
+      stats: (publicationStatsRequest) =>
         LensSDK._call(
           PublicationAPI.stats,
           PublicationRequests.PUBLICATION_STATS_REQUEST,
           publicationStatsRequest
         ),
       whoActed: (whoActedOnPublicationRequest) =>
-       LensSDK._call(
+        LensSDK._call(
           PublicationAPI.whoActed,
           PublicationRequests.WHO_ACTED_ON_PUBLICATION_REQUEST,
           whoActedOnPublicationRequest
         ),
-      comments: (publicationRequest) => 
+      comments: (publicationRequest) =>
         LensSDK._call(
           PublicationAPI.comments,
           PublicationRequests.PUBLICATION_REQUEST,
           publicationRequest
         ),
-      mirrors: (publicationRequest) => 
+      mirrors: (publicationRequest) =>
         LensSDK._call(
           PublicationAPI.mirrors,
           PublicationRequests.PUBLICATION_REQUEST,
           publicationRequest
         ),
-      quotes: (publicationRequest) => 
+      quotes: (publicationRequest) =>
         LensSDK._call(
           PublicationAPI.quotes,
           PublicationRequests.PUBLICATION_REQUEST,
@@ -306,24 +323,30 @@ return (Store, status, enableTestnet) => {
         ),
       reactions: {
         fetch: () => {},
-        add: (publicationReactionRequest) => 
-          LensSDK.publication.reactions._react(PublicationAPI.addReaction, publicationReactionRequest),
-        remove: (publicationReactionRequest) => 
-          LensSDK.publication.reactions._react(PublicationAPI.removeReaction, publicationReactionRequest),
+        add: (publicationReactionRequest) =>
+          LensSDK.publication.reactions._react(
+            PublicationAPI.addReaction,
+            publicationReactionRequest
+          ),
+        remove: (publicationReactionRequest) =>
+          LensSDK.publication.reactions._react(
+            PublicationAPI.removeReaction,
+            publicationReactionRequest
+          ),
         _react: (reactionEndpoint, publicationReactionRequest) =>
           LensSDK._call(
             reactionEndpoint,
             PublicationRequests.PUBLICATION_REACTION_REQUEST,
             publicationReactionRequest
-          )
+          ),
       },
-      hide: (hidePublicationRequest) => 
+      hide: (hidePublicationRequest) =>
         LensSDK._call(
           PublicationAPI.hide,
           PublicationRequests.HIDE_PUBLICATION_REQUEST,
           hidePublicationRequest
         ),
-      report: (reportPublicationRequest) => 
+      report: (reportPublicationRequest) =>
         LensSDK._call(
           PublicationAPI.report,
           PublicationRequests.REPORT_PUBLICATION_REQUEST,
@@ -337,7 +360,7 @@ return (Store, status, enableTestnet) => {
           SearchRequests.PROFILE_SEARCH_REQUEST,
           profileSearchRequest
         ),
-      publications: (publicationSearchRequest) => 
+      publications: (publicationSearchRequest) =>
         LensSDK._call(
           SearchAPI.publications,
           SearchRequests.PUBLICATION_SEARCH_REQUEST,
@@ -345,7 +368,7 @@ return (Store, status, enableTestnet) => {
         ),
     },
     notifications: {
-      fetch: (notificationRequest) => 
+      fetch: (notificationRequest) =>
         LensSDK._call(
           NotificationAPI.fetch,
           NotificationRequests.NOTIFICATION_REQUEST,
@@ -353,13 +376,13 @@ return (Store, status, enableTestnet) => {
         ),
     },
     transaction: {
-      status: (lensTransactionStatusRequest) => 
+      status: (lensTransactionStatusRequest) =>
         LensSDK._call(
           TransactionAPI.status,
           TransactionRequests.LENS_TRANSACTION_STATUS_REQUEST,
           lensTransactionStatusRequest
         ),
-      txIdToTxHash: (txIdToTxHashRequest) => 
+      txIdToTxHash: (txIdToTxHashRequest) =>
         LensSDK._call(
           TransactionAPI.txIdToTxHash,
           TransactionRequests.TXID_TO_TXHASH_REQUEST,
@@ -369,13 +392,11 @@ return (Store, status, enableTestnet) => {
     customRequest: (graphql, request) => {
       LensSDK.set("requestInProgress", true);
 
-      return LightClient.graphql(
-        graphql, 
-        request
-      ).then((data) => data.body)
-      .finally(() => {
-        LensSDK.set("requestInProgress", false);
-      });
+      return LightClient.graphql(graphql, request)
+        .then((data) => data.body)
+        .finally(() => {
+          LensSDK.set("requestInProgress", false);
+        });
     },
     _call: (apiMethod, requestObject, dataObject) => {
       LensSDK.set("requestInProgress", true);
@@ -408,8 +429,11 @@ return (Store, status, enableTestnet) => {
             LensSDK.set("auth", auth);
           } else {
             setTimeout(() => {
-              let auth = LensSDK.getPersisted("auth", Interfaces.AUTH_INTERFACE);
-              
+              let auth = LensSDK.getPersisted(
+                "auth",
+                Interfaces.AUTH_INTERFACE
+              );
+
               if (auth) {
                 LensSDK.set("auth", auth);
               }
@@ -417,21 +441,25 @@ return (Store, status, enableTestnet) => {
           }
 
           if (profileId) {
-            LensSDK.profile.fetch({
-              forProfileId: profileId
-            }).then((profile) => {
-              LensSDK.set("profile", profile);
-            });
+            LensSDK.profile
+              .fetch({
+                forProfileId: profileId,
+              })
+              .then((profile) => {
+                LensSDK.set("profile", profile);
+              });
           } else {
             setTimeout(() => {
               let profileId = LensSDK.getPersisted("profileId", "");
 
               if (profileId) {
-                LensSDK.profile.fetch({
-                  forProfileId: profileId
-                }).then((profile) => {
-                  LensSDK.set("profile", profile);
-                });
+                LensSDK.profile
+                  .fetch({
+                    forProfileId: profileId,
+                  })
+                  .then((profile) => {
+                    LensSDK.set("profile", profile);
+                  });
               }
             }, 800);
           }
@@ -441,10 +469,7 @@ return (Store, status, enableTestnet) => {
       }
     },
     persist: (key, value) => {
-      Storage.privateSet(
-        LensSDK.getPersistKey(key),
-        JSON.stringify(value)
-      );
+      Storage.privateSet(LensSDK.getPersistKey(key), JSON.stringify(value));
     },
     getPersisted: (key, defaultValue) => {
       let persistedKey = LensSDK.getPersistKey(key);
@@ -452,7 +477,7 @@ return (Store, status, enableTestnet) => {
       return JSON.parse(Storage.privateGet(persistedKey)) || defaultValue;
     },
     getPersistKey: (key) => `LensSDK.${key}`,
-    getVersion: () => LensSDK.version
+    getVersion: () => LensSDK.version,
   };
 
   return LensSDK.init();
