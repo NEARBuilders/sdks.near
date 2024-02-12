@@ -1,5 +1,6 @@
 const filterFunction = (item, filterStatusArray, filterKindArray) => {
-  const kind = typeof kind === "string" ? kind : Object.keys(item.kind)[0];
+  const kind =
+    typeof item.kind === "string" ? item.kind : Object.keys(item.kind)[0];
   if (filterStatusArray.length > 0 && filterKindArray.length > 0) {
     return (
       filterStatusArray.includes(item.status) && filterKindArray.includes(kind)
