@@ -12,6 +12,7 @@ return (
       <div>
         <label>Enter your Dao ID</label>
         <input
+          data-testid="dao-input"
           value={daoId}
           placeholder="name.sputnik-dao.near"
           onChange={(e) => {
@@ -36,27 +37,11 @@ return (
         <p>Version : {sdk.getDaoVersion()}</p>
         <p>Policy: {JSON.stringify(sdk.getPolicy() ?? {})}</p>
         <p>Config: {JSON.stringify(sdk.getConfig() ?? {})}</p>
-        <p>
-          Proposal by ID :{" "}
-          {JSON.stringify(sdk.getProposalById({ proposalId: 2 }) ?? {})}
-        </p>
-        <p>
-          Last Proposal ID : {JSON.stringify(sdk.getLastProposalId() ?? {})}
-        </p>
-        <p>
-          Proposals:{" "}
-          {JSON.stringify(sdk.getProposals({ offset: 2, limit: 10 }) ?? {})}
-        </p>
-        <p>
-          Members by group ID: "council":{" "}
-          {JSON.stringify(
-            sdk.getMembersByGroupId({ groupId: "council" }) ?? {}
-          )}
-        </p>
-        <p>
-          Groups and their members:{" "}
-          {JSON.stringify(sdk.getGroupsAndMembers() ?? {})}
-        </p>
+        <p>Proposal by ID : {JSON.stringify(sdk.getProposalById({ proposalId: 2 }) ?? {})}</p>
+        <p>Last Proposal ID : {JSON.stringify(sdk.getLastProposalId() ?? {})}</p>
+        <p>Proposals: {JSON.stringify(sdk.getProposals({ offset: 2, limit: 10 }) ?? {})}</p>
+        <p>Members by group ID: "council": {JSON.stringify(sdk.getMembersByGroupId({ groupId: "council" }) ?? {})}</p>
+        <p>Groups and their members: {JSON.stringify(sdk.getGroupsAndMembers() ?? {})}</p>
       </div>
     )}
   </div>
