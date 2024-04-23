@@ -19,9 +19,8 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install bos-workspace
-          npx playwright install-deps
-          npx playwright install
+          npm install bos-workspace@0.0.1-alpha.4
+          npx playwright install --with-deps
       - name: Run tests
         run: |
           npm run test
