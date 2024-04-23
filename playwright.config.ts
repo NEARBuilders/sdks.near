@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import 'dotenv/config';
 
-const GATEWAY_URL = process.env.GATEWAY_URL || "http://127.0.0.1:4040";
+const GATEWAY_URL = "http://127.0.0.1:4040";
 const ACCOUNT_ID = process.env.ACCOUNT_ID || "sdks.near";
 const BASE_URL = `${GATEWAY_URL}/${ACCOUNT_ID}/widget/`;
 
