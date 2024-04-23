@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import 'dotenv/config';
 
-const GATEWAY_URL = process.env.GATEWAY_URL;
+const GATEWAY_URL = "http://127.0.0.1:4040";
 const ACCOUNT_ID = process.env.ACCOUNT_ID || "sdks.near";
 const BASE_URL = `${GATEWAY_URL}/${ACCOUNT_ID}/widget/`;
 
@@ -68,9 +68,9 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  webServer: {
+    command: "npm run dev",
+    port: 4040,
+    reuseExistingServer: !process.env.CI,
+  },
 });
