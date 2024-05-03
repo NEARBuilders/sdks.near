@@ -1,7 +1,10 @@
 const filterFunction = (item, filterStatusArray, filterKindArray) => {
-  const kind = typeof item.kind === "string" ? item.kind : Object.keys(item.kind)[0];
+  const kind =
+    typeof item.kind === "string" ? item.kind : Object.keys(item.kind)[0];
   if (filterStatusArray.length > 0 && filterKindArray.length > 0) {
-    return filterStatusArray.includes(item.status) && filterKindArray.includes(kind);
+    return (
+      filterStatusArray.includes(item.status) && filterKindArray.includes(kind)
+    );
   } else if (filterKindArray.length > 0) {
     return filterKindArray.includes(kind);
   } else if (filterStatusArray.length > 0) {
@@ -22,6 +25,31 @@ return (daoId, proposalId, factoryId) => {
       return Near.view(daoId, "get_config");
     },
 
+    // GET DAOS
+    getDAOs: () => {
+      let daos;
+
+      const apikey = "c5d70a09-5740-489d-8c3b-36fbc3d40bff";
+
+      const forgeUrl = (apiUrl, params) =>
+        apiUrl +
+        Object.keys(params)
+          .sort()
+          .reduce((paramString, p) => paramString + `${p}=${params[p]}&`, "?");
+
+      daos = fetch(forgeUrl(`https://api.pikespeak.ai/daos/all`, {}), {
+        mode: "cors",
+        headers: {
+          "x-api-key": apikey,
+          "cache-control": "max-age=86400", // 1 day
+        },
+      });
+      if (daos === null) return "";
+      daos = daos?.body;
+
+      return { type: "daos", daos };
+    },
+
     // PROPOSALS
     getProposalById: ({ proposalId }) => {
       return Near.view(daoId, "get_proposal", {
@@ -38,7 +66,12 @@ return (daoId, proposalId, factoryId) => {
       });
     },
     // reverse: boolean, resPerPage: number, filterStatusArray:Array<string>, offset: number
-    getFilteredProposalsByStatus: ({ resPerPage, reverse, filterStatusArray, offset }) => {
+    getFilteredProposalsByStatus: ({
+      resPerPage,
+      reverse,
+      filterStatusArray,
+      offset,
+    }) => {
       let newLastProposalId = offset ?? 0;
       let filteredProposals = [];
       const limit = 30;
@@ -47,12 +80,16 @@ return (daoId, proposalId, factoryId) => {
         newLastProposalId = lastProposalId;
       }
       const promiseArray = [];
-      while ((reverse && newLastProposalId > 0) || (!reverse && newLastProposalId < lastProposalId)) {
+      while (
+        (reverse && newLastProposalId > 0) ||
+        (!reverse && newLastProposalId < lastProposalId)
+      ) {
         promiseArray.push(
           Near.asyncView(daoId, "get_proposals", {
-            from_index: newLastProposalId - limit > 0 ? newLastProposalId - limit : 0,
+            from_index:
+              newLastProposalId - limit > 0 ? newLastProposalId - limit : 0,
             limit: limit,
-          }),
+          })
         );
         if (reverse) {
           newLastProposalId -= limit;
@@ -62,7 +99,9 @@ return (daoId, proposalId, factoryId) => {
       }
       return Promise.all(promiseArray).then((res) => {
         const proposals = [].concat(...res);
-        filteredProposals = proposals.filter((item) => filterStatusArray.includes(item.status));
+        filteredProposals = proposals.filter((item) =>
+          filterStatusArray.includes(item.status)
+        );
         const newArray = filteredProposals.slice(0, resPerPage);
         if (reverse) {
           newArray.reverse();
@@ -74,7 +113,12 @@ return (daoId, proposalId, factoryId) => {
       });
     },
     // reverse: boolean, resPerPage: number, filterKindArray:Array<string>, offset: number
-    getFilteredProposalsByKind: ({ resPerPage, reverse, filterKindArray, offset }) => {
+    getFilteredProposalsByKind: ({
+      resPerPage,
+      reverse,
+      filterKindArray,
+      offset,
+    }) => {
       let newLastProposalId = offset ?? 0;
       const limit = 30;
       const lastProposalId = DaoSDK.getLastProposalId();
@@ -82,12 +126,16 @@ return (daoId, proposalId, factoryId) => {
         newLastProposalId = lastProposalId;
       }
       const promiseArray = [];
-      while ((reverse && newLastProposalId > 0) || (!reverse && newLastProposalId < lastProposalId)) {
+      while (
+        (reverse && newLastProposalId > 0) ||
+        (!reverse && newLastProposalId < lastProposalId)
+      ) {
         promiseArray.push(
           Near.asyncView(daoId, "get_proposals", {
-            from_index: newLastProposalId - limit > 0 ? newLastProposalId - limit : 0,
+            from_index:
+              newLastProposalId - limit > 0 ? newLastProposalId - limit : 0,
             limit: limit,
-          }),
+          })
         );
         if (reverse) {
           newLastProposalId -= limit;
@@ -98,7 +146,8 @@ return (daoId, proposalId, factoryId) => {
       return Promise.all(promiseArray).then((res) => {
         const proposals = [].concat(...res);
         const filteredProposals = proposals.filter((item) => {
-          const kind = typeof kind === "string" ? kind : Object.keys(item.kind)[0];
+          const kind =
+            typeof kind === "string" ? kind : Object.keys(item.kind)[0];
           return filterKindArray.includes(kind);
         });
         const newArray = filteredProposals.slice(0, resPerPage);
@@ -111,7 +160,13 @@ return (daoId, proposalId, factoryId) => {
         };
       });
     },
-    getFilteredProposalsByStatusAndkind: ({ resPerPage, reverse, filterKindArray, filterStatusArray, offset }) => {
+    getFilteredProposalsByStatusAndkind: ({
+      resPerPage,
+      reverse,
+      filterKindArray,
+      filterStatusArray,
+      offset,
+    }) => {
       let newLastProposalId = offset ?? 0;
       let filteredProposals = [];
       const lastProposalId = DaoSDK.getLastProposalId();
@@ -120,12 +175,16 @@ return (daoId, proposalId, factoryId) => {
         newLastProposalId = lastProposalId;
       }
       const promiseArray = [];
-      while ((reverse && newLastProposalId > 0) || (!reverse && newLastProposalId < lastProposalId)) {
+      while (
+        (reverse && newLastProposalId > 0) ||
+        (!reverse && newLastProposalId < lastProposalId)
+      ) {
         promiseArray.push(
           Near.asyncView(daoId, "get_proposals", {
-            from_index: newLastProposalId - limit > 0 ? newLastProposalId - limit : 0,
+            from_index:
+              newLastProposalId - limit > 0 ? newLastProposalId - limit : 0,
             limit: limit,
-          }),
+          })
         );
         if (reverse) {
           newLastProposalId -= limit;
@@ -135,7 +194,9 @@ return (daoId, proposalId, factoryId) => {
       }
       return Promise.all(promiseArray).then((res) => {
         const proposals = [].concat(...res);
-        filteredProposals = proposals.filter((item) => filterFunction(item, filterStatusArray, filterKindArray));
+        filteredProposals = proposals.filter((item) =>
+          filterFunction(item, filterStatusArray, filterKindArray)
+        );
         const newArray = filteredProposals.slice(0, resPerPage);
         if (reverse) {
           newArray.reverse();
@@ -180,10 +241,17 @@ return (daoId, proposalId, factoryId) => {
       const policy = DaoSDK.getPolicy(daoId);
       if (Array.isArray(policy.roles)) {
         const permissions = policy.roles.map((role) => {
-          if (Array.isArray(role.kind.Group) && role.kind.Group.includes(accountId)) {
+          if (
+            Array.isArray(role.kind.Group) &&
+            role.kind.Group.includes(accountId)
+          ) {
             return (
-              role.permissions.includes(`${DaoSDK.proposalKinds[kindName].toString()}:${actionType.toString()}`) ||
-              role.permissions.includes(`${DaoSDK.proposalKinds[kindName].toString()}:*`) ||
+              role.permissions.includes(
+                `${DaoSDK.proposalKinds[kindName].toString()}:${actionType.toString()}`
+              ) ||
+              role.permissions.includes(
+                `${DaoSDK.proposalKinds[kindName].toString()}:*`
+              ) ||
               role.permissions.includes(`*:${actionType.toString()}`) ||
               role.permissions.includes("*:*")
             );
@@ -200,14 +268,19 @@ return (daoId, proposalId, factoryId) => {
       if (Array.isArray(policy.roles)) {
         policy.roles.forEach((role) => {
           const isRoleAllowedToVote =
-            role.permissions.includes(`${DaoSDK.proposalKinds[kindName]}:VoteApprove`) ||
-            role.permissions.includes(`${DaoSDK.proposalKinds[kindName]}:VoteReject`) ||
+            role.permissions.includes(
+              `${DaoSDK.proposalKinds[kindName]}:VoteApprove`
+            ) ||
+            role.permissions.includes(
+              `${DaoSDK.proposalKinds[kindName]}:VoteReject`
+            ) ||
             role.permissions.includes(`${DaoSDK.proposalKinds[kindName]}:*`) ||
             role.permissions.includes(`*:VoteApprove`) ||
             role.permissions.includes(`*:VoteReject`) ||
             role.permissions.includes("*:*");
           if (isRoleAllowedToVote) {
-            const threshold = (role.vote_policy && role.vote_policy[DaoSDK.proposalKinds[kindName]]?.threshold) ||
+            const threshold = (role.vote_policy &&
+              role.vote_policy[DaoSDK.proposalKinds[kindName]]?.threshold) ||
               policy["default_vote_policy"]?.threshold || [0, 0];
             if (Array.isArray(role.kind.Group)) {
               for (const account of role.kind.Group) {
@@ -216,11 +289,15 @@ return (daoId, proposalId, factoryId) => {
                 }
               }
             }
-            const eligibleVotersLength = role.kind.Group ? role.kind.Group.length : 0;
+            const eligibleVotersLength = role.kind.Group
+              ? role.kind.Group.length
+              : 0;
             if (eligibleVoters === 0) {
               return;
             }
-            const votesNeeded = Math.floor((threshold[0] / threshold[1]) * eligibleVotersLength) + 1;
+            const votesNeeded =
+              Math.floor((threshold[0] / threshold[1]) * eligibleVotersLength) +
+              1;
             thresholdVoteCount += votesNeeded;
           }
         });
@@ -243,7 +320,8 @@ return (daoId, proposalId, factoryId) => {
           totalVotes.spam++;
         }
       }
-      totalVotes.total = totalVotes.approve + totalVotes.reject + totalVotes.spam;
+      totalVotes.total =
+        totalVotes.approve + totalVotes.reject + totalVotes.spam;
       return totalVotes;
     },
     getProposalExpirationTime: ({ submissionTime }) => {
@@ -361,7 +439,9 @@ return (daoId, proposalId, factoryId) => {
     decodeArgs: ({ args }) => {
       try {
         const args64 = args;
-        const jsonArgs = JSON.parse(Buffer.from(args64, "base64").toString("utf-8"));
+        const jsonArgs = JSON.parse(
+          Buffer.from(args64, "base64").toString("utf-8")
+        );
         return JSON.stringify(jsonArgs, undefined, 2);
       } catch {
         return "failed to deserialize";
@@ -376,7 +456,9 @@ return (daoId, proposalId, factoryId) => {
       }
       const minDeposit = Big(policy?.proposal_bond);
       // make sure that the deposit is more/equal than bond amount
-      const finalDeposit = Big(deposit).gt(minDeposit) ? Big(deposit) : minDeposit;
+      const finalDeposit = Big(deposit).gt(minDeposit)
+        ? Big(deposit)
+        : minDeposit;
 
       return DaoSDK.call({
         methodName: "add_proposal",
@@ -389,7 +471,9 @@ return (daoId, proposalId, factoryId) => {
       });
     },
     createDao: ({ daoName, args, deposit, gas, additionalCalls }) => {
-      const daoArgs = Buffer.from(JSON.stringify(args), "utf-8").toString("base64");
+      const daoArgs = Buffer.from(JSON.stringify(args), "utf-8").toString(
+        "base64"
+      );
       const calls = [
         {
           contractName: "sputnik-dao.near",
@@ -409,7 +493,14 @@ return (daoId, proposalId, factoryId) => {
     },
 
     // SPECIFIC PROPOSALS
-    createAddMemberProposal: ({ description, memberId, roleId, gas, deposit, additionalCalls }) => {
+    createAddMemberProposal: ({
+      description,
+      memberId,
+      roleId,
+      gas,
+      deposit,
+      additionalCalls,
+    }) => {
       return DaoSDK.addProposal({
         proposal: {
           description: description,
@@ -425,7 +516,14 @@ return (daoId, proposalId, factoryId) => {
         additionalCalls,
       });
     },
-    createRemoveMemberProposal: ({ description, memberId, roleId, gas, deposit, additionalCalls }) => {
+    createRemoveMemberProposal: ({
+      description,
+      memberId,
+      roleId,
+      gas,
+      deposit,
+      additionalCalls,
+    }) => {
       return DaoSDK.addProposal({
         proposal: {
           description: description,
@@ -452,7 +550,15 @@ return (daoId, proposalId, factoryId) => {
         additionalCalls,
       });
     },
-    createTransferProposal: ({ description, tokenId, receiverId, amount, gas, deposit, additionalCalls }) => {
+    createTransferProposal: ({
+      description,
+      tokenId,
+      receiverId,
+      amount,
+      gas,
+      deposit,
+      additionalCalls,
+    }) => {
       return DaoSDK.addProposal({
         proposal: {
           description: description,
@@ -469,7 +575,13 @@ return (daoId, proposalId, factoryId) => {
         additionalCalls,
       });
     },
-    createBountyProposal: ({ description, bounty, gas, deposit, additionalCalls }) => {
+    createBountyProposal: ({
+      description,
+      bounty,
+      gas,
+      deposit,
+      additionalCalls,
+    }) => {
       return DaoSDK.addProposal({
         proposal: {
           description: description,
@@ -484,7 +596,14 @@ return (daoId, proposalId, factoryId) => {
         additionalCalls,
       });
     },
-    createSubmitBountyProposal: ({ description, bounty, receiverId, gas, deposit, additionalCalls }) => {
+    createSubmitBountyProposal: ({
+      description,
+      bounty,
+      receiverId,
+      gas,
+      deposit,
+      additionalCalls,
+    }) => {
       return DaoSDK.addProposal({
         proposal: {
           description: description,
@@ -511,7 +630,9 @@ return (daoId, proposalId, factoryId) => {
       deposit,
       additionalCalls,
     }) => {
-      const proposal_args = Buffer.from(JSON.stringify(args), "utf-8").toString("base64");
+      const proposal_args = Buffer.from(JSON.stringify(args), "utf-8").toString(
+        "base64"
+      );
       return DaoSDK.addProposal({
         proposal: {
           description: description,
