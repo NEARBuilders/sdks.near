@@ -1,0 +1,22 @@
+name: Deploy 'sdks.near' App Components to Testnet
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - widget/**
+
+
+jobs:
+  deploy-testnet:
+    uses: nearbuilders/bos-workspace/.github/workflows/deploy.yml@main
+    with:
+      bw-legacy: false
+      deploy-env: "testnet"
+      build-env: "testnet"
+      app-name: "sdks.near"
+      deploy-account-address: sdks.testnet
+      signer-account-address: sdks.testnet
+      signer-public-key: ${{ vars.SIGNER_PUBLIC_KEY_TESTNET }}
+    secrets: 
+      SIGNER_PRIVATE_KEY: ${{ secrets.SIGNER_PRIVATE_KEY_TESTNET }}

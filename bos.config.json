@@ -1,0 +1,11 @@
+{
+  "account": "sdks.near",
+  "format": true,
+  "aliases": ["./aliases.mainnet.json"],
+  "overrides": {
+    "testnet": {
+      "account": "allthethings.testnet",
+      "aliases": ["./aliases.testnet.json"]
+    }
+  }
+}
