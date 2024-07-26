@@ -14,7 +14,7 @@ Start development version:
 yarn dev
 ```
 
-This will start both a local gateway (http://127.0.0.1:4040) and http server for loading your local components.
+This will start both a local gateway (http://127.0.0.1:8080) and http server for loading your local components.
 
 Optionally, to open local widgets in existing, supported gateways:
 
@@ -23,4 +23,4 @@ Optionally, to open local widgets in existing, supported gateways:
 - https://near.org/flags
 - https://everything.dev/flags
 
-2. Paste the Bos Loader Http URL (http://127.0.0.1:4040/api/loader)
+2. Paste the Bos Loader Http URL (http://127.0.0.1:8080/api/loader)

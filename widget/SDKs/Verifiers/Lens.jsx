@@ -1,0 +1,1 @@
+return VM.require("${config_account}/widget/SDKs.Verifiers.LensVerifier");
