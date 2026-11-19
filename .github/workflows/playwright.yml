@@ -6,8 +6,14 @@ on:
     branches:
       - main
 
+# Cancel superseded PR checks; keep every non-PR invocation independent.
+concurrency:
+  group: playwright.yml-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   playwright-tests:
+    timeout-minutes: 60
     name: Playwright tests
     runs-on: ubuntu-latest
     steps:
